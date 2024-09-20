@@ -5,3 +5,5 @@ edition = "2021"
 authors = ["Jin Hyoung Joo <hyoungjoo.j@gmail.com>"]
 
 [dependencies]
+crossterm = "0.28.1"
+ratatui = "0.28.1"
