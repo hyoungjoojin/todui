@@ -1,6 +1,5 @@
-mod body;
+mod components;
 pub mod context;
-mod sidebar;
 
 use context::ViewContext;
 use ratatui::{
@@ -9,7 +8,7 @@ use ratatui::{
 };
 
 pub struct View {
-    pub context: ViewContext,
+    context: ViewContext,
 }
 
 impl View {
@@ -17,6 +16,10 @@ impl View {
         View {
             context: ViewContext::new(),
         }
+    }
+
+    pub fn context(&mut self) -> &mut ViewContext {
+        &mut self.context
     }
 
     pub fn render(&self, frame: &mut Frame) {

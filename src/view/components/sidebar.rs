@@ -1,5 +1,4 @@
-use super::context::SidebarStage;
-use crate::View;
+use crate::view::{context::SidebarStage, View};
 use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Style},
@@ -24,8 +23,8 @@ impl View {
                 Block::default()
                     .borders(Borders::ALL)
                     .style(Style::default().fg(
-                        if self.context.is_sidebar_on()
-                            && self.context.get_sidebar_stage() == SidebarStage::ABOUT
+                        if self.context.sidebar()
+                            && *self.context.sidebar_stage() == SidebarStage::ABOUT
                         {
                             Color::Green
                         } else {
@@ -40,8 +39,8 @@ impl View {
                 Block::default()
                     .borders(Borders::ALL)
                     .style(
-                        if self.context.is_sidebar_on()
-                            && self.context.get_sidebar_stage() == SidebarStage::MENU
+                        if self.context.sidebar()
+                            && *self.context.sidebar_stage() == SidebarStage::MENU
                         {
                             Color::Green
                         } else {
@@ -56,8 +55,8 @@ impl View {
                 Block::default()
                     .borders(Borders::ALL)
                     .style(
-                        if self.context.is_sidebar_on()
-                            && self.context.get_sidebar_stage() == SidebarStage::PROJECTS
+                        if self.context.sidebar()
+                            && *self.context.sidebar_stage() == SidebarStage::PROJECTS
                         {
                             Color::Green
                         } else {

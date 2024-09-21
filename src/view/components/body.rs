@@ -15,11 +15,11 @@ impl View {
             .constraints([Constraint::Min(3), Constraint::Length(3)])
             .split(area);
 
-        let body_section = Paragraph::new(Text::styled("", Style::default().fg(Color::White)))
+        let tasks_section = Paragraph::new(Text::styled("", Style::default().fg(Color::White)))
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .style(if self.context.is_sidebar_on() {
+                    .style(if self.context.sidebar() {
                         Color::White
                     } else {
                         Color::Green
@@ -35,7 +35,7 @@ impl View {
                     .title(" Command "),
             );
 
-        frame.render_widget(body_section, panel[0]);
+        frame.render_widget(tasks_section, panel[0]);
         frame.render_widget(command_section, panel[1]);
     }
 }

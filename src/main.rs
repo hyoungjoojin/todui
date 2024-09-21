@@ -1,15 +1,15 @@
+mod canvas;
 mod controller;
-mod utils;
 mod view;
 
 use crate::{
+    canvas::Canvas,
     controller::{state::State, Controller},
-    utils::canvas::Canvas,
     view::View,
 };
 
 fn main() {
-    let mut canvas = Canvas::new();
+    let mut canvas = Canvas::new().expect("");
     let mut view: View = View::new();
     let controller: Controller = Controller::new();
 
@@ -18,7 +18,7 @@ fn main() {
             .draw(|frame| view.render(frame))
             .expect("terminal has failed to draw");
 
-        match controller.run(&mut view.context) {
+        match controller.run(&mut view.context()) {
             State::Continue => continue,
             _ => break,
         }

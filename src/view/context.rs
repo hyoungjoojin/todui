@@ -36,19 +36,19 @@ impl ViewContext {
         }
     }
 
-    pub fn is_sidebar_on(&self) -> bool {
+    pub fn sidebar(&self) -> bool {
         self.sidebar
-    }
-
-    pub fn get_sidebar_stage(&self) -> SidebarStage {
-        self.sidebar_stage
-    }
-
-    pub fn set_sidebar_stage(&mut self, sidebar_stage: SidebarStage) {
-        self.sidebar_stage = sidebar_stage
     }
 
     pub fn toggle_sidebar(&mut self) {
         self.sidebar = !self.sidebar;
+    }
+
+    pub fn sidebar_stage(&self) -> &SidebarStage {
+        &self.sidebar_stage
+    }
+
+    pub fn set_sidebar_stage(&mut self, sidebar_stage: SidebarStage) {
+        self.sidebar_stage = sidebar_stage
     }
 }
