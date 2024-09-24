@@ -26,6 +26,7 @@ impl SidebarStage {
 pub struct ViewContext {
     sidebar: bool,
     sidebar_stage: SidebarStage,
+    project_index: usize,
 }
 
 impl ViewContext {
@@ -33,6 +34,7 @@ impl ViewContext {
         ViewContext {
             sidebar: true,
             sidebar_stage: SidebarStage::ABOUT,
+            project_index: 0,
         }
     }
 
@@ -50,5 +52,13 @@ impl ViewContext {
 
     pub fn set_sidebar_stage(&mut self, sidebar_stage: SidebarStage) {
         self.sidebar_stage = sidebar_stage
+    }
+
+    pub fn project_index(&self) -> usize {
+        self.project_index
+    }
+
+    pub fn set_project_index(&mut self, project_index: usize) {
+        self.project_index = project_index;
     }
 }
