@@ -3,46 +3,52 @@ mod controller;
 mod model;
 mod utils;
 mod view;
+use tokio;
+
+use std::{process::exit, sync::Arc};
+use tokio::sync::Mutex;
 
 use crate::{
     canvas::Canvas,
     controller::{state::State, Controller},
     model::Model,
-    utils::security::get_api_token,
+    utils::api::RestClient,
     view::View,
 };
 
-// #[tokio::main]
-fn main() {
-    let api_token = match get_api_token() {
-        Ok(token) => token,
-        Err(_) => {
-            println!("Your Todoist API token could not be found by todui.\n");
-            println!("Export or set an environment variable.");
-            println!("  export TODOIST_API_TOKEN=\"YOUR_API_TOKEN\"");
-            return;
-        }
+#[tokio::main]
+async fn main() {
+    let client = match RestClient::new() {
+        Some(client) => client,
+        None => exit(-1),
     };
 
     let mut canvas = Canvas::new().expect("");
-    let mut model = Model::new();
     let mut view: View = View::new();
     let controller: Controller = Controller::new();
 
-    match model.update(&api_token) {
-        Ok(_) => {}
-        Err(error) => {
-            println!("{error:#?}");
-            return;
+    let model = Arc::new(Mutex::new(Model::new()));
+    let model_clone = Arc::clone(&model);
+
+    tokio::spawn(async move {
+        let mut lock = model_clone.lock().await;
+        match lock.update(&client).await {
+            Ok(_) => {}
+            Err(error) => {
+                println!("{error:#?}");
+                return;
+            }
         }
-    }
+    });
 
     loop {
+        let model_clone = model.lock().await.clone();
+
         canvas
-            .draw(|frame| view.render(&model, frame))
+            .draw(|frame| view.render(&model_clone, frame))
             .expect("terminal has failed to draw");
 
-        match controller.run(&model, &mut view.context_mut()) {
+        match controller.run(&model_clone, &mut view.context_mut()) {
             State::Continue => continue,
             _ => break,
         }

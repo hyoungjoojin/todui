@@ -1,10 +1,11 @@
 mod project;
 
 use project::Project;
-use reqwest;
 use std::error::Error;
-use tokio;
 
+use crate::utils::api::{HttpMethod, RestClient};
+
+#[derive(Clone)]
 pub struct Model {
     projects: Vec<Project>,
 }
@@ -20,18 +21,8 @@ impl Model {
         &self.projects
     }
 
-    #[tokio::main]
-    pub async fn update(&mut self, api_token: &String) -> Result<(), Box<dyn Error>> {
-        let client = reqwest::Client::new();
-        let projects = client
-            .get("https://api.todoist.com/rest/v2/projects")
-            .bearer_auth(api_token)
-            .send()
-            .await?
-            .json::<Vec<Project>>()
-            .await?;
-
-        self.projects = projects
+    pub async fn update(&mut self, client: &RestClient) -> Result<(), Box<dyn Error>> {
+        self.projects = client.send("/projects", HttpMethod::GET).await?.json::<Vec<Project>>().await?
             .iter()
             .map(|project| {
                 let mut project = project.clone();
@@ -47,3 +38,4 @@ impl Model {
         Ok(())
     }
 }
+

@@ -11,15 +11,6 @@ pub struct Project {
 }
 
 impl Project {
-    pub fn new(id: String, name: String, parent_id: Option<String>) -> Project {
-        Project {
-            id,
-            name,
-            parent_id,
-            depth: 0,
-        }
-    }
-
     pub fn id(&self) -> &String {
         &self.id
     }
