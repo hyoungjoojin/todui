@@ -1,6 +1,9 @@
 pub mod state;
 
-use crate::view::context::ViewContext;
+use crate::{
+    model::Model,
+    view::context::{SidebarStage, ViewContext},
+};
 use crossterm::event::{self, Event, KeyEvent};
 use state::State;
 
@@ -11,7 +14,7 @@ impl Controller {
         Controller {}
     }
 
-    pub fn run(&self, view_context: &mut ViewContext) -> State {
+    pub fn run(&self, model: &Model, view_context: &mut ViewContext) -> State {
         let key: KeyEvent = match event::read() {
             Ok(Event::Key(key)) => key,
             Ok(_) => return State::Continue,
@@ -30,6 +33,30 @@ impl Controller {
             }
             event::KeyCode::Char('l') => {
                 view_context.set_sidebar_stage(view_context.sidebar_stage().next());
+                State::Continue
+            }
+            event::KeyCode::Char('j') => {
+                if *view_context.sidebar_stage() != SidebarStage::PROJECTS {
+                    return State::Continue;
+                }
+
+                let project_index = view_context.project_index();
+                if project_index + 1 != model.projects().len() {
+                    view_context.set_project_index(project_index + 1);
+                }
+
+                State::Continue
+            }
+            event::KeyCode::Char('k') => {
+                if *view_context.sidebar_stage() != SidebarStage::PROJECTS {
+                    return State::Continue;
+                }
+
+                let project_index = view_context.project_index();
+                if project_index != 0 {
+                    view_context.set_project_index(project_index - 1);
+                }
+
                 State::Continue
             }
             event::KeyCode::Enter => {

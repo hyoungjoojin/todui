@@ -6,4 +6,8 @@ authors = ["Jin Hyoung Joo <hyoungjoo.j@gmail.com>"]
 
 [dependencies]
 crossterm = "0.28.1"
+openssl = { version = "0.10.66", features = ["vendored"] }
 ratatui = "0.28.1"
+reqwest = { version = "0.12.7", features = ["json"] }
+serde = { version = "1.0.210", features = ["derive"] }
+tokio = { version = "1.40.0", features = ["full"] }
