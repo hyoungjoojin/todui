@@ -59,6 +59,13 @@ impl Controller {
 
                 State::Continue
             }
+            event::KeyCode::Char('?') => {
+                if !view_context.modal() {
+                    view_context.toggle_modal();
+                }
+
+                State::Continue
+            }
             event::KeyCode::Enter => {
                 if view_context.sidebar() {
                     view_context.toggle_sidebar();
@@ -67,6 +74,11 @@ impl Controller {
                 State::Continue
             }
             event::KeyCode::Esc => {
+                if view_context.modal() {
+                    view_context.toggle_modal();
+                    return State::Continue;
+                }
+
                 if !view_context.sidebar() {
                     view_context.toggle_sidebar();
                 }

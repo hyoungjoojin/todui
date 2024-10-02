@@ -4,7 +4,8 @@ pub mod context;
 use crate::model::Model;
 use context::ViewContext;
 use ratatui::{
-    layout::{Constraint, Direction, Layout},
+    layout::{Constraint, Direction, Flex, Layout},
+    widgets::Block,
     Frame,
 };
 
@@ -28,12 +29,15 @@ impl View {
     }
 
     pub fn render(&self, model: &Model, frame: &mut Frame) {
+        let area = frame.area();
+
         let app = Layout::default()
             .direction(Direction::Horizontal)
             .constraints([Constraint::Percentage(33), Constraint::Percentage(67)])
-            .split(frame.area());
+            .split(area);
 
         self.render_sidebar(model, frame, app[0]);
         self.render_body(frame, app[1]);
+        self.render_modal(frame, area);
     }
 }

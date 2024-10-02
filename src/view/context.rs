@@ -24,6 +24,7 @@ impl SidebarStage {
 }
 
 pub struct ViewContext {
+    modal: bool,
     sidebar: bool,
     sidebar_stage: SidebarStage,
     project_index: usize,
@@ -32,10 +33,19 @@ pub struct ViewContext {
 impl ViewContext {
     pub fn new() -> ViewContext {
         ViewContext {
+            modal: false,
             sidebar: true,
             sidebar_stage: SidebarStage::ABOUT,
             project_index: 0,
         }
+    }
+
+    pub fn modal(&self) -> bool {
+        self.modal
+    }
+
+    pub fn toggle_modal(&mut self) {
+        self.modal = !self.modal;
     }
 
     pub fn sidebar(&self) -> bool {
