@@ -34,6 +34,6 @@ impl View {
             .split(frame.area());
 
         self.render_sidebar(model, frame, app[0]);
-        self.render_body(frame, app[1]);
+        self.render_body(model, frame, app[1]);
     }
 }
