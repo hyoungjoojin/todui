@@ -1,3 +1,4 @@
+pub mod key;
 pub mod state;
 
 use crate::{
@@ -5,6 +6,7 @@ use crate::{
     view::context::{SidebarStage, ViewContext},
 };
 use crossterm::event::{self, Event, KeyEvent};
+use key::Key;
 use state::State;
 
 pub struct Controller {}
@@ -25,55 +27,10 @@ impl Controller {
             return State::Break;
         }
 
-        match key.code {
-            event::KeyCode::Char('q') => State::Break,
-            event::KeyCode::Char('h') => {
-                view_context.set_sidebar_stage(view_context.sidebar_stage().previous());
-                State::Continue
-            }
-            event::KeyCode::Char('l') => {
-                view_context.set_sidebar_stage(view_context.sidebar_stage().next());
-                State::Continue
-            }
-            event::KeyCode::Char('j') => {
-                if *view_context.sidebar_stage() != SidebarStage::PROJECTS {
-                    return State::Continue;
-                }
-
-                let project_index = view_context.project_index();
-                if project_index + 1 != model.projects().len() {
-                    view_context.set_project_index(project_index + 1);
-                }
-
-                State::Continue
-            }
-            event::KeyCode::Char('k') => {
-                if *view_context.sidebar_stage() != SidebarStage::PROJECTS {
-                    return State::Continue;
-                }
-
-                let project_index = view_context.project_index();
-                if project_index != 0 {
-                    view_context.set_project_index(project_index - 1);
-                }
-
-                State::Continue
-            }
-            event::KeyCode::Char('?') => {
-                if !view_context.modal() {
-                    view_context.toggle_modal();
-                }
-
-                State::Continue
-            }
-            event::KeyCode::Enter => {
-                if view_context.sidebar() {
-                    view_context.toggle_sidebar();
-                }
-
-                State::Continue
-            }
-            event::KeyCode::Esc => {
+        let key = Key::from_keycode(key.code);
+        match key {
+            Key::Quit => State::Break,
+            Key::Escape => {
                 if view_context.modal() {
                     view_context.toggle_modal();
                     return State::Continue;
@@ -85,7 +42,53 @@ impl Controller {
 
                 State::Continue
             }
-            _ => State::Continue,
+            Key::Enter => {
+                if view_context.sidebar() {
+                    view_context.toggle_sidebar();
+                }
+
+                State::Continue
+            }
+            Key::Left => {
+                view_context.set_sidebar_stage(view_context.sidebar_stage().previous());
+                State::Continue
+            }
+            Key::Right => {
+                view_context.set_sidebar_stage(view_context.sidebar_stage().next());
+                State::Continue
+            }
+            Key::Up => {
+                if *view_context.sidebar_stage() != SidebarStage::PROJECTS {
+                    return State::Continue;
+                }
+
+                let project_index = view_context.project_index();
+                if project_index != 0 {
+                    view_context.set_project_index(project_index - 1);
+                }
+
+                State::Continue
+            }
+            Key::Down => {
+                if *view_context.sidebar_stage() != SidebarStage::PROJECTS {
+                    return State::Continue;
+                }
+
+                let project_index = view_context.project_index();
+                if project_index + 1 != model.projects().len() {
+                    view_context.set_project_index(project_index + 1);
+                }
+
+                State::Continue
+            }
+            Key::Help => {
+                if !view_context.modal() {
+                    view_context.toggle_modal();
+                }
+
+                State::Continue
+            }
+            Key::Ignore => State::Continue,
         }
     }
 }
