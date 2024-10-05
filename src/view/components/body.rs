@@ -1,3 +1,4 @@
+use chrono::{Local, NaiveDate};
 use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Style},
@@ -18,7 +19,29 @@ impl View {
         let tasks: Vec<Line> = model
             .tasks()
             .iter()
-            .map(|task| Line::from(Span::styled(format!("{}", task.content()), Color::White)))
+            .filter(|task| match *task.due() {
+                Some(due) => {
+                    *due.date() == NaiveDate::try_from(Local::now().naive_local()).unwrap()
+                }
+                None => false,
+            })
+            .map(|task| {
+                Line::from(Span::styled(
+                    format!(
+                        "{} {}",
+                        task.content(),
+                        match *task.due() {
+                            Some(due) => {
+                                format!("{}", due.date())
+                            }
+                            None => {
+                                "No due date.".to_string()
+                            }
+                        }
+                    ),
+                    Color::White,
+                ))
+            })
             .collect();
 
         let tasks_section = Paragraph::new(Text::from(tasks)).block(

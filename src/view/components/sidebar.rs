@@ -37,21 +37,29 @@ impl View {
                     .title(" [0] - About "),
             );
 
-        let menu_section = Paragraph::new(Text::styled("", Style::default().fg(Color::White)))
-            .block(
-                Block::default()
-                    .borders(Borders::ALL)
-                    .style(
-                        if self.context.sidebar()
-                            && *self.context.sidebar_stage() == SidebarStage::MENU
-                        {
-                            Color::Green
-                        } else {
-                            Color::White
-                        },
-                    )
-                    .title(" [1] - Menu "),
-            );
+        let menu_section = Paragraph::new(Text::styled(
+            "- Today",
+            Style::default().fg(
+                if self.context.sidebar() && *self.context.sidebar_stage() == SidebarStage::MENU {
+                    Color::Green
+                } else {
+                    Color::White
+                },
+            ),
+        ))
+        .block(
+            Block::default()
+                .borders(Borders::ALL)
+                .style(
+                    if self.context.sidebar() && *self.context.sidebar_stage() == SidebarStage::MENU
+                    {
+                        Color::Green
+                    } else {
+                        Color::White
+                    },
+                )
+                .title(" [1] - Menu "),
+        );
 
         let project_index: usize = if self.context().project_index() < model.projects().len() {
             self.context().project_index()
