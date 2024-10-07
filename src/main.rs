@@ -1,20 +1,18 @@
+mod app;
 mod canvas;
 mod controller;
 mod model;
 mod utils;
-mod view;
-use tokio;
-
-use std::{process::exit, sync::Arc};
-use tokio::sync::Mutex;
 
 use crate::{
+    app::App,
     canvas::Canvas,
     controller::{state::State, Controller},
     model::Model,
     utils::api::RestClient,
-    view::View,
 };
+use std::{process::exit, sync::Arc};
+use tokio::{self, sync::Mutex};
 
 #[tokio::main]
 async fn main() {
@@ -24,7 +22,7 @@ async fn main() {
     };
 
     let mut canvas = Canvas::new().expect("");
-    let mut view: View = View::new();
+    let mut app = App::new();
     let controller: Controller = Controller::new();
 
     let model = Arc::new(Mutex::new(Model::new()));
@@ -45,10 +43,10 @@ async fn main() {
         let model_clone = model.lock().await.clone();
 
         canvas
-            .draw(|frame| view.render(&model_clone, frame))
+            .draw(|frame| app.render(&model_clone, frame))
             .expect("terminal has failed to draw");
 
-        match controller.run(&model_clone, &mut view.context_mut()) {
+        match controller.run(&model_clone, app.context_mut()) {
             State::Continue => continue,
             _ => break,
         }
