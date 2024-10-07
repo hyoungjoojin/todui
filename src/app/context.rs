@@ -1,5 +1,6 @@
 pub struct Context {
     stage: Stage,
+    modal_stage: ModalStage,
     sidebar_stage: SidebarStage,
     project_index: usize,
 }
@@ -8,6 +9,7 @@ impl Context {
     pub fn new() -> Context {
         Context {
             stage: Stage::SIDEBAR,
+            modal_stage: ModalStage::OFF,
             sidebar_stage: SidebarStage::ABOUT,
             project_index: 0,
         }
@@ -19,6 +21,14 @@ impl Context {
 
     pub fn set_stage(&mut self, stage: Stage) {
         self.stage = stage
+    }
+
+    pub fn modal_stage(&self) -> ModalStage {
+        self.modal_stage
+    }
+
+    pub fn set_modal_stage(&mut self, modal_stage: ModalStage) {
+        self.modal_stage = modal_stage
     }
 
     pub fn sidebar_stage(&self) -> &SidebarStage {
@@ -67,4 +77,10 @@ impl SidebarStage {
             SidebarStage::PROJECTS => SidebarStage::ABOUT,
         }
     }
+}
+
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
+pub enum ModalStage {
+    OFF,
+    HELP,
 }

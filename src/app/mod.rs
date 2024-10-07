@@ -8,6 +8,7 @@ use crate::{
     },
     model::Model,
 };
+use components::layout::modal::Modal;
 use ratatui::{
     layout::{Constraint, Direction, Layout},
     Frame,
@@ -17,6 +18,7 @@ pub struct App {
     context: Context,
     sidebar: Sidebar,
     body: Body,
+    modal: Modal,
 }
 
 impl App {
@@ -25,6 +27,7 @@ impl App {
             context: Context::new(),
             sidebar: Sidebar::new(),
             body: Body::new(),
+            modal: Modal::new(),
         }
     }
 
@@ -33,12 +36,15 @@ impl App {
     }
 
     pub fn render(&self, model: &Model, frame: &mut Frame) {
+        let area = frame.area();
+
         let app = Layout::default()
             .direction(Direction::Horizontal)
             .constraints([Constraint::Percentage(33), Constraint::Percentage(67)])
-            .split(frame.area());
+            .split(area);
 
         self.sidebar.render(model, &self.context, frame, app[0]);
         self.body.render(model, &self.context, frame, app[1]);
+        self.modal.render(&self.context, frame, area);
     }
 }
