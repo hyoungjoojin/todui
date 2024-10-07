@@ -3,11 +3,10 @@ pub mod state;
 
 use crate::{
     app::context::{Context, ModalStage, SidebarStage, Stage},
+    controller::{key::Key, state::State},
     model::Model,
 };
 use crossterm::event::{self, Event, KeyEvent};
-use key::Key;
-use state::State;
 
 pub struct Controller {}
 
