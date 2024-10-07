@@ -1,14 +1,17 @@
 mod components;
 pub mod context;
 
-use components::layout::{body::Body, sidebar::Sidebar};
-use context::Context;
+use crate::{
+    app::{
+        components::layout::{body::Body, sidebar::Sidebar},
+        context::Context,
+    },
+    model::Model,
+};
 use ratatui::{
     layout::{Constraint, Direction, Layout},
     Frame,
 };
-
-use crate::model::Model;
 
 pub struct App {
     context: Context,

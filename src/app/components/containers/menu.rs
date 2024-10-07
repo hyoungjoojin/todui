@@ -10,6 +10,8 @@ use ratatui::{
     Frame,
 };
 
+const TITLE: &str = " [1] - Menu ";
+
 pub struct Menu {}
 
 impl Menu {
@@ -18,14 +20,16 @@ impl Menu {
     }
 
     pub fn render(&self, props: MenuProps, frame: &mut Frame, area: Rect) {
-        let color = if props.on { Color::Green } else { Color::White };
+        let MenuProps { on } = props;
+
+        let color = if on { Color::Green } else { Color::White };
 
         frame.render_widget(
             Paragraph::new(Text::styled("", Style::default().fg(Color::White))).block(
                 Block::default()
                     .borders(Borders::ALL)
                     .style(color)
-                    .title(" [1] - Menu "),
+                    .title(TITLE),
             ),
             area,
         );

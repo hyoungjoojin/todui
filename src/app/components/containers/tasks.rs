@@ -10,6 +10,8 @@ use ratatui::{
     Frame,
 };
 
+const TITLE: &str = " Tasks ";
+
 pub struct Tasks {}
 
 impl Tasks {
@@ -27,7 +29,7 @@ impl Tasks {
                 Block::default()
                     .borders(Borders::ALL)
                     .style(color)
-                    .title(" Tasks "),
+                    .title(TITLE),
             ),
             area,
         );

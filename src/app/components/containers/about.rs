@@ -10,6 +10,8 @@ use ratatui::{
     Frame,
 };
 
+const TITLE: &str = " [0] - ABOUT ";
+
 pub struct About {}
 
 impl About {
@@ -18,14 +20,16 @@ impl About {
     }
 
     pub fn render(&self, props: AboutProps, frame: &mut Frame, area: Rect) {
-        let color = if props.on { Color::Green } else { Color::White };
+        let AboutProps { on } = props;
+
+        let color = if on { Color::Green } else { Color::White };
 
         frame.render_widget(
             Paragraph::new(Text::styled("todui", Style::default().fg(Color::White))).block(
                 Block::default()
                     .borders(Borders::ALL)
                     .style(color)
-                    .title(" [0] - About "),
+                    .title(TITLE),
             ),
             area,
         );

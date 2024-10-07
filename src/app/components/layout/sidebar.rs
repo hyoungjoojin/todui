@@ -36,9 +36,9 @@ impl Sidebar {
             ])
             .split(area);
 
-        self.about.render((model, context).into(), frame, panel[0]);
-        self.menu.render((model, context).into(), frame, panel[1]);
-        self.projects
-            .render((model, context).into(), frame, panel[2]);
+        let state = (model, context);
+        self.about.render(state.into(), frame, panel[0]);
+        self.menu.render(state.into(), frame, panel[1]);
+        self.projects.render(state.into(), frame, panel[2]);
     }
 }

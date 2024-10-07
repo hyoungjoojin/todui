@@ -4,14 +4,15 @@ mod controller;
 mod model;
 mod utils;
 
-use app::App;
-use controller::state::State;
-use tokio;
-
+use crate::{
+    app::App,
+    canvas::Canvas,
+    controller::{state::State, Controller},
+    model::Model,
+    utils::api::RestClient,
+};
 use std::{process::exit, sync::Arc};
-use tokio::sync::Mutex;
-
-use crate::{canvas::Canvas, controller::Controller, model::Model, utils::api::RestClient};
+use tokio::{self, sync::Mutex};
 
 #[tokio::main]
 async fn main() {

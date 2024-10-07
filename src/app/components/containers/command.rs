@@ -6,6 +6,8 @@ use ratatui::{
     Frame,
 };
 
+const TITLE: &str = " Command ";
+
 pub struct Command {}
 
 impl Command {
@@ -19,7 +21,7 @@ impl Command {
                 Block::default()
                     .borders(Borders::ALL)
                     .style(Color::White)
-                    .title(" Command "),
+                    .title(TITLE),
             ),
             area,
         );
