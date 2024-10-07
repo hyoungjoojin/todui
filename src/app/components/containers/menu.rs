@@ -25,7 +25,7 @@ impl Menu {
         let color = if on { Color::Green } else { Color::White };
 
         frame.render_widget(
-            Paragraph::new(Text::styled("", Style::default().fg(Color::White))).block(
+            Paragraph::new(Text::styled("- Today", Style::default().fg(color))).block(
                 Block::default()
                     .borders(Borders::ALL)
                     .style(color)
