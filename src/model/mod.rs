@@ -1,5 +1,5 @@
-mod project;
-mod task;
+pub mod project;
+pub mod task;
 
 use project::Project;
 use std::error::Error;
