@@ -58,8 +58,7 @@ pub struct MenuProps {
 
 impl From<(&Model, &Context)> for MenuProps {
     fn from((_, context): (&Model, &Context)) -> MenuProps {
-        let on =
-            *context.stage() == Stage::SIDEBAR && *context.sidebar_stage() == SidebarStage::MENU;
+        let on = context.stage() == Stage::SIDEBAR && context.sidebar_stage() == SidebarStage::MENU;
 
         MenuProps {
             on,

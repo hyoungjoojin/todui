@@ -17,8 +17,8 @@ impl Context {
         }
     }
 
-    pub fn stage(&self) -> &Stage {
-        &self.stage
+    pub fn stage(&self) -> Stage {
+        self.stage
     }
 
     pub fn set_stage(&mut self, stage: Stage) {
@@ -33,8 +33,8 @@ impl Context {
         self.modal_stage = modal_stage
     }
 
-    pub fn sidebar_stage(&self) -> &SidebarStage {
-        &self.sidebar_stage
+    pub fn sidebar_stage(&self) -> SidebarStage {
+        self.sidebar_stage
     }
 
     pub fn set_sidebar_stage(&mut self, sidebar_stage: SidebarStage) {
@@ -65,6 +65,12 @@ pub enum Stage {
 }
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
+pub enum ModalStage {
+    OFF,
+    HELP,
+}
+
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub enum SidebarStage {
     ABOUT,
     MENU,
@@ -87,12 +93,6 @@ impl SidebarStage {
             SidebarStage::PROJECTS => SidebarStage::ABOUT,
         }
     }
-}
-
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
-pub enum ModalStage {
-    OFF,
-    HELP,
 }
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]

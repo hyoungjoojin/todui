@@ -67,20 +67,20 @@ pub struct TasksProps<'a> {
 
 impl<'a> From<(&'a Model, &Context)> for TasksProps<'a> {
     fn from((model, context): (&'a Model, &Context)) -> TasksProps<'a> {
-        let on = *context.stage() != Stage::SIDEBAR;
+        let on = context.stage() != Stage::SIDEBAR;
 
-        let filter = if *context.sidebar_stage() == SidebarStage::MENU {
+        let filter = if context.sidebar_stage() == SidebarStage::MENU {
             match context.menu_stage() {
-                MenuStage::TODAY => move |task: &&Task| match *task.due() {
+                MenuStage::TODAY => |task: &&Task| match *task.due() {
                     Some(due) => {
                         *due.date() == NaiveDate::try_from(Local::now().naive_local()).unwrap()
                     }
                     None => false,
                 },
-                MenuStage::UPCOMING => move |task: &&Task| true,
+                MenuStage::UPCOMING => |_: &&Task| true,
             }
         } else {
-            move |task: &&Task| true
+            |_: &&Task| true
         };
 
         TasksProps {
