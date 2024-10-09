@@ -43,7 +43,7 @@ pub struct AboutProps {
 impl From<(&Model, &Context)> for AboutProps {
     fn from((_, context): (&Model, &Context)) -> AboutProps {
         let on =
-            *context.stage() == Stage::SIDEBAR && *context.sidebar_stage() == SidebarStage::ABOUT;
+            context.stage() == Stage::SIDEBAR && context.sidebar_stage() == SidebarStage::ABOUT;
 
         AboutProps { on }
     }

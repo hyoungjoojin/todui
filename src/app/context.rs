@@ -2,6 +2,7 @@ pub struct Context {
     stage: Stage,
     modal_stage: ModalStage,
     sidebar_stage: SidebarStage,
+    menu_stage: MenuStage,
     project_index: usize,
 }
 
@@ -11,12 +12,13 @@ impl Context {
             stage: Stage::SIDEBAR,
             modal_stage: ModalStage::OFF,
             sidebar_stage: SidebarStage::ABOUT,
+            menu_stage: MenuStage::TODAY,
             project_index: 0,
         }
     }
 
-    pub fn stage(&self) -> &Stage {
-        &self.stage
+    pub fn stage(&self) -> Stage {
+        self.stage
     }
 
     pub fn set_stage(&mut self, stage: Stage) {
@@ -31,12 +33,20 @@ impl Context {
         self.modal_stage = modal_stage
     }
 
-    pub fn sidebar_stage(&self) -> &SidebarStage {
-        &self.sidebar_stage
+    pub fn sidebar_stage(&self) -> SidebarStage {
+        self.sidebar_stage
     }
 
     pub fn set_sidebar_stage(&mut self, sidebar_stage: SidebarStage) {
         self.sidebar_stage = sidebar_stage
+    }
+
+    pub fn menu_stage(&self) -> MenuStage {
+        self.menu_stage
+    }
+
+    pub fn set_menu_stage(&mut self, menu_stage: MenuStage) {
+        self.menu_stage = menu_stage
     }
 
     pub fn project_index(&self) -> usize {
@@ -52,6 +62,12 @@ impl Context {
 pub enum Stage {
     SIDEBAR,
     BODY,
+}
+
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
+pub enum ModalStage {
+    OFF,
+    HELP,
 }
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
@@ -80,7 +96,23 @@ impl SidebarStage {
 }
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
-pub enum ModalStage {
-    OFF,
-    HELP,
+pub enum MenuStage {
+    TODAY,
+    UPCOMING,
+}
+
+impl MenuStage {
+    pub fn previous(&self) -> MenuStage {
+        match self {
+            MenuStage::TODAY => MenuStage::UPCOMING,
+            MenuStage::UPCOMING => MenuStage::TODAY,
+        }
+    }
+
+    pub fn next(&self) -> MenuStage {
+        match self {
+            MenuStage::UPCOMING => MenuStage::TODAY,
+            MenuStage::TODAY => MenuStage::UPCOMING,
+        }
+    }
 }

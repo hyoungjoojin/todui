@@ -35,37 +35,33 @@ impl Controller {
                     return State::Continue;
                 }
 
-                if *context.stage() != Stage::SIDEBAR {
+                if context.stage() != Stage::SIDEBAR {
                     context.set_stage(Stage::SIDEBAR)
                 }
 
                 State::Continue
             }
             Key::Enter => {
-                if *context.stage() == Stage::SIDEBAR {
+                if context.stage() == Stage::SIDEBAR {
                     context.set_stage(Stage::BODY);
                 }
 
                 State::Continue
             }
             Key::Left => {
+                if context.stage() == Stage::BODY {
+                    return State::Continue;
+                }
+
                 context.set_sidebar_stage(context.sidebar_stage().previous());
                 State::Continue
             }
             Key::Right => {
-                context.set_sidebar_stage(context.sidebar_stage().next());
-                State::Continue
-            }
-            Key::Up => {
-                if *context.sidebar_stage() != SidebarStage::PROJECTS {
+                if context.stage() == Stage::BODY {
                     return State::Continue;
                 }
 
-                let project_index = context.project_index();
-                if project_index != 0 {
-                    context.set_project_index(project_index - 1);
-                }
-
+                context.set_sidebar_stage(context.sidebar_stage().next());
                 State::Continue
             }
             Key::About => {
@@ -80,14 +76,42 @@ impl Controller {
                 context.set_sidebar_stage(SidebarStage::PROJECTS);
                 State::Continue
             }
-            Key::Down => {
-                if *context.sidebar_stage() != SidebarStage::PROJECTS {
+            Key::Up => {
+                if context.stage() == Stage::BODY {
                     return State::Continue;
                 }
 
-                let project_index = context.project_index();
-                if project_index + 1 != model.projects().len() {
-                    context.set_project_index(project_index + 1);
+                if context.sidebar_stage() == SidebarStage::MENU {
+                    context.set_menu_stage(context.menu_stage().previous());
+                    return State::Continue;
+                }
+
+                if context.sidebar_stage() == SidebarStage::PROJECTS {
+                    let project_index = context.project_index();
+                    if project_index != 0 {
+                        context.set_project_index(project_index - 1);
+                    }
+                    return State::Continue;
+                }
+
+                State::Continue
+            }
+            Key::Down => {
+                if context.stage() == Stage::BODY {
+                    return State::Continue;
+                }
+
+                if context.sidebar_stage() == SidebarStage::MENU {
+                    context.set_menu_stage(context.menu_stage().next());
+                    return State::Continue;
+                }
+
+                if context.sidebar_stage() == SidebarStage::PROJECTS {
+                    let project_index = context.project_index();
+                    if project_index + 1 != model.projects().len() {
+                        context.set_project_index(project_index + 1);
+                    }
+                    return State::Continue;
                 }
 
                 State::Continue

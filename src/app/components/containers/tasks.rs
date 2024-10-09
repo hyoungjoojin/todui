@@ -1,5 +1,5 @@
 use crate::{
-    app::context::{Context, Stage},
+    app::context::{Context, MenuStage, SidebarStage, Stage},
     model::{task::Task, Model},
 };
 use chrono::{Local, NaiveDate};
@@ -21,18 +21,13 @@ impl Tasks {
     }
 
     pub fn render(&self, props: TasksProps, frame: &mut Frame, area: Rect) {
-        let TasksProps { on, tasks } = props;
+        let TasksProps { on, tasks, filter } = props;
 
         let color = if on { Color::Green } else { Color::White };
 
         let tasks: Vec<Line> = tasks
             .iter()
-            .filter(|task| match *task.due() {
-                Some(due) => {
-                    *due.date() == NaiveDate::try_from(Local::now().naive_local()).unwrap()
-                }
-                None => false,
-            })
+            .filter(filter)
             .map(|task| {
                 Line::from(Span::styled(
                     format!(
@@ -67,15 +62,31 @@ impl Tasks {
 pub struct TasksProps<'a> {
     on: bool,
     tasks: &'a Vec<Task>,
+    filter: Box<dyn Fn(&&Task) -> bool>,
 }
 
 impl<'a> From<(&'a Model, &Context)> for TasksProps<'a> {
     fn from((model, context): (&'a Model, &Context)) -> TasksProps<'a> {
-        let on = *context.stage() != Stage::SIDEBAR;
+        let on = context.stage() != Stage::SIDEBAR;
+
+        let filter = if context.sidebar_stage() == SidebarStage::MENU {
+            match context.menu_stage() {
+                MenuStage::TODAY => |task: &&Task| match *task.due() {
+                    Some(due) => {
+                        *due.date() == NaiveDate::try_from(Local::now().naive_local()).unwrap()
+                    }
+                    None => false,
+                },
+                MenuStage::UPCOMING => |_: &&Task| true,
+            }
+        } else {
+            |_: &&Task| true
+        };
 
         TasksProps {
             on,
             tasks: model.tasks(),
+            filter: Box::new(filter),
         }
     }
 }
