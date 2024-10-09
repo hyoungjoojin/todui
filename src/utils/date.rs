@@ -1,3 +1,5 @@
+use chrono::{Local, NaiveDate};
+
 pub mod naive_date_serializer {
     use chrono::NaiveDate;
     use serde::{de::Error, Deserialize, Deserializer, Serializer};
@@ -20,4 +22,8 @@ pub mod naive_date_serializer {
         let date = NaiveDate::parse_from_str(&s, FORMAT).map_err(Error::custom)?;
         Ok(date)
     }
+}
+
+pub fn get_current_date() -> NaiveDate {
+    NaiveDate::try_from(Local::now().naive_local()).unwrap()
 }
