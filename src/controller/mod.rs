@@ -56,18 +56,6 @@ impl Controller {
                 context.set_sidebar_stage(context.sidebar_stage().next());
                 State::Continue
             }
-            Key::Up => {
-                if *context.sidebar_stage() != SidebarStage::PROJECTS {
-                    return State::Continue;
-                }
-
-                let project_index = context.project_index();
-                if project_index != 0 {
-                    context.set_project_index(project_index - 1);
-                }
-
-                State::Continue
-            }
             Key::About => {
                 context.set_sidebar_stage(SidebarStage::ABOUT);
                 State::Continue
@@ -80,14 +68,34 @@ impl Controller {
                 context.set_sidebar_stage(SidebarStage::PROJECTS);
                 State::Continue
             }
-            Key::Down => {
-                if *context.sidebar_stage() != SidebarStage::PROJECTS {
+            Key::Up => {
+                if *context.sidebar_stage() == SidebarStage::MENU {
+                    context.set_menu_stage(context.menu_stage().previous());
                     return State::Continue;
                 }
 
-                let project_index = context.project_index();
-                if project_index + 1 != model.projects().len() {
-                    context.set_project_index(project_index + 1);
+                if *context.sidebar_stage() == SidebarStage::PROJECTS {
+                    let project_index = context.project_index();
+                    if project_index != 0 {
+                        context.set_project_index(project_index - 1);
+                    }
+                    return State::Continue;
+                }
+
+                State::Continue
+            }
+            Key::Down => {
+                if *context.sidebar_stage() == SidebarStage::MENU {
+                    context.set_menu_stage(context.menu_stage().next());
+                    return State::Continue;
+                }
+
+                if *context.sidebar_stage() == SidebarStage::PROJECTS {
+                    let project_index = context.project_index();
+                    if project_index + 1 != model.projects().len() {
+                        context.set_project_index(project_index + 1);
+                    }
+                    return State::Continue;
                 }
 
                 State::Continue

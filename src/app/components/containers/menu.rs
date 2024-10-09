@@ -1,11 +1,11 @@
 use crate::{
-    app::context::{Context, SidebarStage, Stage},
+    app::context::{Context, MenuStage, SidebarStage, Stage},
     model::Model,
 };
 use ratatui::{
     layout::Rect,
-    style::{Color, Style},
-    text::Text,
+    style::Color,
+    text::{Line, Span, Text},
     widgets::{Block, Borders, Paragraph},
     Frame,
 };
@@ -20,15 +20,30 @@ impl Menu {
     }
 
     pub fn render(&self, props: MenuProps, frame: &mut Frame, area: Rect) {
-        let MenuProps { on } = props;
+        let MenuProps { on, menu_stage } = props;
 
-        let color = if on { Color::Green } else { Color::White };
+        let text = vec![
+            Line::from(Span::styled(
+                "- Today ",
+                match menu_stage {
+                    MenuStage::TODAY => Color::Green,
+                    MenuStage::UPCOMING => Color::White,
+                },
+            )),
+            Line::from(Span::styled(
+                "- Upcoming ",
+                match menu_stage {
+                    MenuStage::TODAY => Color::White,
+                    MenuStage::UPCOMING => Color::Green,
+                },
+            )),
+        ];
 
         frame.render_widget(
-            Paragraph::new(Text::styled("- Today", Style::default().fg(color))).block(
+            Paragraph::new(Text::from(text)).block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .style(color)
+                    .style(if on { Color::Green } else { Color::White })
                     .title(TITLE),
             ),
             area,
@@ -38,6 +53,7 @@ impl Menu {
 
 pub struct MenuProps {
     on: bool,
+    menu_stage: MenuStage,
 }
 
 impl From<(&Model, &Context)> for MenuProps {
@@ -45,6 +61,9 @@ impl From<(&Model, &Context)> for MenuProps {
         let on =
             *context.stage() == Stage::SIDEBAR && *context.sidebar_stage() == SidebarStage::MENU;
 
-        MenuProps { on }
+        MenuProps {
+            on,
+            menu_stage: context.menu_stage(),
+        }
     }
 }
