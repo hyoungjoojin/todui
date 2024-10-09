@@ -73,8 +73,8 @@ pub struct ProjectsProps<'a> {
 
 impl<'a> From<(&'a Model, &Context)> for ProjectsProps<'a> {
     fn from((model, context): (&'a Model, &Context)) -> ProjectsProps<'a> {
-        let on = *context.stage() == Stage::SIDEBAR
-            && *context.sidebar_stage() == SidebarStage::PROJECTS;
+        let on =
+            context.stage() == Stage::SIDEBAR && context.sidebar_stage() == SidebarStage::PROJECTS;
 
         ProjectsProps {
             on,

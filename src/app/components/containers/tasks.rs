@@ -67,11 +67,11 @@ pub struct TasksProps<'a> {
 
 impl<'a> From<(&'a Model, &Context)> for TasksProps<'a> {
     fn from((model, context): (&'a Model, &Context)) -> TasksProps<'a> {
-        let on = *context.stage() != Stage::SIDEBAR;
+        let on = context.stage() != Stage::SIDEBAR;
 
         let project = model.projects().get(context.project_index());
 
-        let filter: Box<dyn Fn(&&Task) -> bool> = match *context.sidebar_stage() {
+        let filter: Box<dyn Fn(&&Task) -> bool> = match context.sidebar_stage() {
             SidebarStage::ABOUT => Box::new(|_: &&Task| false),
             SidebarStage::MENU => match context.menu_stage() {
                 MenuStage::TODAY => Box::new(|task: &&Task| match *task.due() {
