@@ -78,6 +78,10 @@ impl Controller {
             }
             Key::Up => {
                 if context.stage() == Stage::BODY {
+                    let task_index = context.task_index();
+                    if task_index != 0 {
+                        context.set_task_index(task_index - 1);
+                    }
                     return State::Continue;
                 }
 
@@ -98,6 +102,10 @@ impl Controller {
             }
             Key::Down => {
                 if context.stage() == Stage::BODY {
+                    let task_index = context.task_index();
+                    if task_index + 1 != model.tasks().len() {
+                        context.set_task_index(task_index + 1);
+                    }
                     return State::Continue;
                 }
 
