@@ -1,8 +1,8 @@
 use crate::{
     app::context::{Context, MenuStage, SidebarStage, Stage},
     model::{task::Task, Model},
+    utils::date::get_current_date,
 };
-use chrono::{Local, NaiveDate};
 use ratatui::{
     layout::Rect,
     style::Color,
@@ -62,31 +62,34 @@ impl Tasks {
 pub struct TasksProps<'a> {
     on: bool,
     tasks: &'a Vec<Task>,
-    filter: Box<dyn Fn(&&Task) -> bool>,
+    filter: Box<dyn Fn(&&Task) -> bool + 'a>,
 }
 
 impl<'a> From<(&'a Model, &Context)> for TasksProps<'a> {
     fn from((model, context): (&'a Model, &Context)) -> TasksProps<'a> {
         let on = context.stage() != Stage::SIDEBAR;
 
-        let filter = if context.sidebar_stage() == SidebarStage::MENU {
-            match context.menu_stage() {
-                MenuStage::TODAY => |task: &&Task| match *task.due() {
-                    Some(due) => {
-                        *due.date() == NaiveDate::try_from(Local::now().naive_local()).unwrap()
-                    }
+        let project = model.projects().get(context.project_index());
+
+        let filter: Box<dyn Fn(&&Task) -> bool> = match context.sidebar_stage() {
+            SidebarStage::ABOUT => Box::new(|_: &&Task| false),
+            SidebarStage::MENU => match context.menu_stage() {
+                MenuStage::TODAY => Box::new(|task: &&Task| match *task.due() {
+                    Some(due) => *due.date() == get_current_date(),
                     None => false,
-                },
-                MenuStage::UPCOMING => |_: &&Task| true,
-            }
-        } else {
-            |_: &&Task| true
+                }),
+                MenuStage::UPCOMING => Box::new(|_: &&Task| true),
+            },
+            SidebarStage::PROJECTS => Box::new(move |task: &&Task| match project {
+                Some(project) => task.project_id() == project.id(),
+                None => false,
+            }),
         };
 
         TasksProps {
             on,
             tasks: model.tasks(),
-            filter: Box::new(filter),
+            filter,
         }
     }
 }
