@@ -7,6 +7,7 @@ use crate::utils::date::naive_date_serializer;
 pub struct Task {
     id: String,
     content: String,
+    project_id: String,
     due: Option<Due>,
 }
 
@@ -17,6 +18,10 @@ impl Task {
 
     pub fn content(&self) -> &String {
         &self.content
+    }
+
+    pub fn project_id(&self) -> &String {
+        &self.project_id
     }
 
     pub fn due(&self) -> &Option<Due> {
