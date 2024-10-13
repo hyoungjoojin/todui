@@ -35,7 +35,7 @@ impl App {
         &mut self.context
     }
 
-    pub fn render(&self, model: &Model, frame: &mut Frame) {
+    pub fn render(&mut self, model: &Model, frame: &mut Frame) {
         let area = frame.area();
 
         let app = Layout::default()
@@ -44,7 +44,7 @@ impl App {
             .split(area);
 
         self.sidebar.render(model, &self.context, frame, app[0]);
-        self.body.render(model, &self.context, frame, app[1]);
+        self.body.render(model, &mut self.context, frame, app[1]);
         self.modal.render(&self.context, frame, area);
     }
 }

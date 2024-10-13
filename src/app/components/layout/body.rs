@@ -23,7 +23,7 @@ impl Body {
         }
     }
 
-    pub fn render(&self, model: &Model, context: &Context, frame: &mut Frame, area: Rect) {
+    pub fn render(&self, model: &Model, context: &mut Context, frame: &mut Frame, area: Rect) {
         let panel = Layout::default()
             .direction(Direction::Vertical)
             .constraints([Constraint::Min(3), Constraint::Length(3)])
