@@ -4,6 +4,7 @@ pub struct Context {
     sidebar_stage: SidebarStage,
     menu_stage: MenuStage,
     project_index: usize,
+    task_index: usize,
 }
 
 impl Context {
@@ -14,6 +15,7 @@ impl Context {
             sidebar_stage: SidebarStage::ABOUT,
             menu_stage: MenuStage::TODAY,
             project_index: 0,
+            task_index: 0,
         }
     }
 
@@ -55,6 +57,14 @@ impl Context {
 
     pub fn set_project_index(&mut self, project_index: usize) {
         self.project_index = project_index
+    }
+
+    pub fn task_index(&self) -> usize {
+        self.task_index
+    }
+
+    pub fn set_task_index(&mut self, task_index: usize) {
+        self.task_index = task_index
     }
 }
 
