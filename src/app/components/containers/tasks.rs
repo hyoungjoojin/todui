@@ -1,10 +1,11 @@
+use super::editor::{Editor, EditorProps};
 use crate::{
     app::context::{Context, MenuStage, SidebarStage, Stage},
     model::{task::Task, Model},
     utils::date::get_current_date,
 };
 use ratatui::{
-    layout::{Margin, Rect},
+    layout::{Constraint, Direction, Layout, Margin, Rect},
     style::Color,
     text::{Line, Span, Text},
     widgets::{Block, Borders, Paragraph, Scrollbar, ScrollbarState},
@@ -13,16 +14,21 @@ use ratatui::{
 
 const TITLE: &str = " Tasks ";
 
-pub struct Tasks {}
+pub struct Tasks {
+    editor: Editor,
+}
 
 impl Tasks {
     pub fn new() -> Tasks {
-        Tasks {}
+        Tasks {
+            editor: Editor::new(),
+        }
     }
 
     pub fn render(&self, props: TasksProps, frame: &mut Frame, area: Rect) {
         let TasksProps {
             on,
+            editor_on,
             task_index,
             tasks,
             filter,
@@ -36,6 +42,7 @@ impl Tasks {
 
         let color = if on { Color::Green } else { Color::White };
 
+        let mut selected_task: Option<&Task> = None;
         let tasks: Vec<Line> = tasks
             .iter()
             .filter(filter)
@@ -55,6 +62,7 @@ impl Tasks {
                         }
                     ),
                     if index == task_index {
+                        selected_task = Some(task);
                         Color::Green
                     } else {
                         Color::White
@@ -65,6 +73,19 @@ impl Tasks {
 
         let scrollbar = Scrollbar::new(ratatui::widgets::ScrollbarOrientation::VerticalRight);
         let mut scrollbar_state = ScrollbarState::new(tasks.len()).position(task_index);
+
+        let area = if editor_on {
+            let area = Layout::default()
+                .direction(Direction::Horizontal)
+                .constraints([Constraint::Percentage(40), Constraint::Percentage(60)])
+                .split(area);
+
+            self.editor
+                .render(EditorProps::new(selected_task), frame, area[1]);
+            area[0]
+        } else {
+            area
+        };
 
         frame.render_widget(
             Paragraph::new(Text::from(tasks))
@@ -90,6 +111,7 @@ impl Tasks {
 
 pub struct TasksProps<'a> {
     on: bool,
+    editor_on: bool,
     task_index: usize,
     tasks: &'a Vec<Task>,
     filter: Box<dyn Fn(&&Task) -> bool + 'a>,
@@ -97,7 +119,7 @@ pub struct TasksProps<'a> {
 
 impl<'a> From<(&'a Model, &Context)> for TasksProps<'a> {
     fn from((model, context): (&'a Model, &Context)) -> TasksProps<'a> {
-        let on = context.stage() != Stage::SIDEBAR;
+        let on = context.stage() == Stage::BODY;
 
         let project = model.projects().get(context.project_index());
 
@@ -118,6 +140,7 @@ impl<'a> From<(&'a Model, &Context)> for TasksProps<'a> {
 
         TasksProps {
             on,
+            editor_on: context.stage() == Stage::EDITOR,
             task_index: context.task_index(),
             tasks: model.tasks(),
             filter,

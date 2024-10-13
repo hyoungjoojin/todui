@@ -35,20 +35,36 @@ impl Controller {
                     return State::Continue;
                 }
 
-                if context.stage() != Stage::SIDEBAR {
-                    context.set_stage(Stage::SIDEBAR)
+                if context.stage() == Stage::EDITOR {
+                    context.set_stage(Stage::BODY);
+                    return State::Continue;
+                }
+
+                if context.stage() == Stage::BODY {
+                    context.set_stage(Stage::SIDEBAR);
+                    return State::Continue;
                 }
 
                 State::Continue
             }
             Key::Enter => {
+                if context.stage() == Stage::BODY {
+                    context.set_stage(Stage::EDITOR);
+                    return State::Continue;
+                }
+
                 if context.stage() == Stage::SIDEBAR {
                     context.set_stage(Stage::BODY);
+                    return State::Continue;
                 }
 
                 State::Continue
             }
             Key::Left => {
+                if context.stage() == Stage::EDITOR {
+                    return State::Continue;
+                }
+
                 if context.stage() == Stage::BODY {
                     return State::Continue;
                 }
@@ -57,6 +73,10 @@ impl Controller {
                 State::Continue
             }
             Key::Right => {
+                if context.stage() == Stage::EDITOR {
+                    return State::Continue;
+                }
+
                 if context.stage() == Stage::BODY {
                     return State::Continue;
                 }
@@ -77,6 +97,10 @@ impl Controller {
                 State::Continue
             }
             Key::Up => {
+                if context.stage() == Stage::EDITOR {
+                    return State::Continue;
+                }
+
                 if context.stage() == Stage::BODY {
                     let task_index = context.task_index();
                     if task_index != 0 {
@@ -101,6 +125,10 @@ impl Controller {
                 State::Continue
             }
             Key::Down => {
+                if context.stage() == Stage::EDITOR {
+                    return State::Continue;
+                }
+
                 if context.stage() == Stage::BODY {
                     let task_index = context.task_index();
                     if task_index + 1 != model.tasks().len() {
