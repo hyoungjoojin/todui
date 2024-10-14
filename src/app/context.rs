@@ -72,6 +72,7 @@ impl Context {
 pub enum Stage {
     SIDEBAR,
     BODY,
+    EDITOR,
 }
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]

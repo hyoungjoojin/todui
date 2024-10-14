@@ -1,10 +1,11 @@
+use super::editor::{Editor, EditorProps};
 use crate::{
     app::context::{Context, MenuStage, SidebarStage, Stage},
     model::{task::Task, Model},
     utils::date::get_current_date,
 };
 use ratatui::{
-    layout::{Margin, Rect},
+    layout::{Constraint, Direction, Layout, Margin, Rect},
     style::Color,
     text::{Line, Span, Text},
     widgets::{Block, Borders, Paragraph, Scrollbar, ScrollbarState},
@@ -13,16 +14,21 @@ use ratatui::{
 
 const TITLE: &str = " Tasks ";
 
-pub struct Tasks {}
+pub struct Tasks {
+    editor: Editor,
+}
 
 impl Tasks {
     pub fn new() -> Tasks {
-        Tasks {}
+        Tasks {
+            editor: Editor::new(),
+        }
     }
 
     pub fn render(&self, props: TasksProps, frame: &mut Frame, area: Rect) {
         let TasksProps {
             on,
+            editor_on,
             task_index,
             tasks,
         } = props;
@@ -31,6 +37,7 @@ impl Tasks {
         let num_tasks = tasks.len();
         let color = if on { Color::Green } else { Color::White };
 
+        let mut selected_task: Option<&Task> = None;
         let tasks: Vec<Line> = tasks
             .iter()
             .enumerate()
@@ -38,6 +45,7 @@ impl Tasks {
                 Line::from(Span::styled(
                     format!("{}", task.content()),
                     if index == task_index {
+                        selected_task = Some(task);
                         Color::Green
                     } else {
                         Color::White
@@ -57,6 +65,19 @@ impl Tasks {
             frame.render_widget(content, area);
             return;
         }
+
+        let area = if editor_on {
+            let area = Layout::default()
+                .direction(Direction::Horizontal)
+                .constraints([Constraint::Percentage(40), Constraint::Percentage(60)])
+                .split(area);
+
+            self.editor
+                .render(EditorProps::new(selected_task), frame, area[1]);
+            area[0]
+        } else {
+            area
+        };
 
         frame.render_widget(
             content.scroll(self.calculate_scroll_offset(task_index, num_tasks, height)),
@@ -119,6 +140,7 @@ impl Tasks {
 
 pub struct TasksProps<'a> {
     on: bool,
+    editor_on: bool,
     task_index: usize,
     tasks: Vec<&'a Task>,
 }
@@ -156,6 +178,7 @@ impl<'a> From<(&'a Model, &mut Context)> for TasksProps<'a> {
 
         TasksProps {
             on,
+            editor_on: context.stage() == Stage::EDITOR,
             task_index: context.task_index(),
             tasks,
         }
