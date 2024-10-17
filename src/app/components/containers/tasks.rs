@@ -1,11 +1,10 @@
-use super::editor::{Editor, EditorProps};
 use crate::{
     app::context::{Context, MenuStage, SidebarStage, Stage},
     model::{task::Task, Model},
     utils::date::get_current_date,
 };
 use ratatui::{
-    layout::{Constraint, Direction, Layout, Margin, Rect},
+    layout::{Margin, Rect},
     style::Color,
     text::{Line, Span, Text},
     widgets::{Block, Borders, Paragraph, Scrollbar, ScrollbarState},
@@ -14,21 +13,16 @@ use ratatui::{
 
 const TITLE: &str = " Tasks ";
 
-pub struct Tasks {
-    editor: Editor,
-}
+pub struct Tasks {}
 
 impl Tasks {
     pub fn new() -> Tasks {
-        Tasks {
-            editor: Editor::new(),
-        }
+        Tasks {}
     }
 
-    pub fn render(&self, props: TasksProps, frame: &mut Frame, area: Rect) {
+    pub fn render(&self, props: TasksProps, frame: &mut Frame, area: Rect) -> TasksReturnProps {
         let TasksProps {
             on,
-            editor_on,
             task_index,
             tasks,
         } = props;
@@ -63,21 +57,14 @@ impl Tasks {
 
         if num_tasks <= height {
             frame.render_widget(content, area);
-            return;
+            return TasksReturnProps {
+                task_index,
+                selected_task: match selected_task {
+                    Some(task) => Some(task.clone()),
+                    None => None,
+                },
+            };
         }
-
-        let area = if editor_on {
-            let area = Layout::default()
-                .direction(Direction::Horizontal)
-                .constraints([Constraint::Percentage(40), Constraint::Percentage(60)])
-                .split(area);
-
-            self.editor
-                .render(EditorProps::new(selected_task), frame, area[1]);
-            area[0]
-        } else {
-            area
-        };
 
         frame.render_widget(
             content.scroll(self.calculate_scroll_offset(task_index, num_tasks, height)),
@@ -93,6 +80,14 @@ impl Tasks {
             }),
             &mut scrollbar_state,
         );
+
+        return TasksReturnProps {
+            task_index,
+            selected_task: match selected_task {
+                Some(task) => Some(task.clone()),
+                None => None,
+            },
+        };
     }
 
     fn build_scrollbar(
@@ -140,14 +135,13 @@ impl Tasks {
 
 pub struct TasksProps<'a> {
     on: bool,
-    editor_on: bool,
     task_index: usize,
     tasks: Vec<&'a Task>,
 }
 
-impl<'a> From<(&'a Model, &mut Context)> for TasksProps<'a> {
-    fn from((model, context): (&'a Model, &mut Context)) -> TasksProps<'a> {
-        let on = context.stage() != Stage::SIDEBAR;
+impl<'a> From<(&'a Model, &Context)> for TasksProps<'a> {
+    fn from((model, context): (&'a Model, &Context)) -> TasksProps<'a> {
+        let on = context.stage() == Stage::BODY;
 
         let project = model.projects().get(context.project_index());
 
@@ -168,19 +162,21 @@ impl<'a> From<(&'a Model, &mut Context)> for TasksProps<'a> {
 
         let tasks: Vec<&Task> = model.tasks().iter().filter(filter).collect();
 
-        context.set_task_index(if tasks.len() == 0 {
-            0
-        } else if context.task_index() >= tasks.len() {
-            tasks.len() - 1
-        } else {
-            context.task_index()
-        });
-
         TasksProps {
             on,
-            editor_on: context.stage() == Stage::EDITOR,
-            task_index: context.task_index(),
+            task_index: if tasks.len() == 0 {
+                0
+            } else if context.task_index() >= tasks.len() {
+                tasks.len() - 1
+            } else {
+                context.task_index()
+            },
             tasks,
         }
     }
+}
+
+pub struct TasksReturnProps {
+    pub task_index: usize,
+    pub selected_task: Option<Task>,
 }

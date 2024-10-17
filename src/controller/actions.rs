@@ -77,6 +77,7 @@ impl Key {
             }),
             Key::Up => Box::new(|(_, context)| {
                 if context.stage() == Stage::EDITOR {
+                    context.set_editor_stage(context.editor_stage().previous());
                     return State::Continue;
                 }
 
@@ -105,6 +106,7 @@ impl Key {
             }),
             Key::Down => Box::new(|(model, context)| {
                 if context.stage() == Stage::EDITOR {
+                    context.set_editor_stage(context.editor_stage().next());
                     return State::Continue;
                 }
 

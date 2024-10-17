@@ -1,3 +1,7 @@
+use crate::{
+    app::{context::EditorStage, Context},
+    model::{task::Task, Model},
+};
 use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Style},
@@ -5,8 +9,6 @@ use ratatui::{
     widgets::{Block, Borders, Padding, Paragraph},
     Frame,
 };
-
-use crate::model::task::Task;
 
 const EDITOR_TITLE: &str = " Editor ";
 const ID_TITLE: &str = " Task ID ";
@@ -30,7 +32,7 @@ impl Editor {
         let inner_area = block.inner(area);
         frame.render_widget(block, area);
 
-        let EditorProps { task } = props;
+        let EditorProps { task, stage } = props;
 
         let task = match task {
             Some(task) => task,
@@ -46,7 +48,15 @@ impl Editor {
             task.content(),
             Style::default().fg(Color::White),
         ))
-        .block(Block::bordered().style(Color::White).title(CONTENT_TITLE));
+        .block(
+            Block::bordered()
+                .style(if stage == EditorStage::CONTENT {
+                    Color::Green
+                } else {
+                    Color::White
+                })
+                .title(CONTENT_TITLE),
+        );
 
         let description = Paragraph::new(Text::styled(
             task.description(),
@@ -54,7 +64,11 @@ impl Editor {
         ))
         .block(
             Block::bordered()
-                .style(Color::White)
+                .style(if stage == EditorStage::DESCRIPTION {
+                    Color::Green
+                } else {
+                    Color::White
+                })
                 .title(DESCRIPTION_TITLE),
         );
 
@@ -69,12 +83,16 @@ impl Editor {
     }
 }
 
-pub struct EditorProps<'a> {
-    task: Option<&'a Task>,
+pub struct EditorProps {
+    task: Option<Task>,
+    stage: EditorStage,
 }
 
-impl<'a> EditorProps<'a> {
-    pub fn new(task: Option<&'a Task>) -> EditorProps<'a> {
-        EditorProps { task }
+impl From<(&Model, &Context)> for EditorProps {
+    fn from((_, context): (&Model, &Context)) -> EditorProps {
+        EditorProps {
+            stage: context.editor_stage(),
+            task: context.selected_task().clone(),
+        }
     }
 }

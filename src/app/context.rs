@@ -1,10 +1,14 @@
+use crate::model::task::Task;
+
 pub struct Context {
     stage: Stage,
     modal_stage: ModalStage,
     sidebar_stage: SidebarStage,
     menu_stage: MenuStage,
+    editor_stage: EditorStage,
     project_index: usize,
     task_index: usize,
+    selected_task: Option<Task>,
 }
 
 impl Context {
@@ -14,8 +18,10 @@ impl Context {
             modal_stage: ModalStage::OFF,
             sidebar_stage: SidebarStage::ABOUT,
             menu_stage: MenuStage::TODAY,
+            editor_stage: EditorStage::CONTENT,
             project_index: 0,
             task_index: 0,
+            selected_task: None,
         }
     }
 
@@ -51,6 +57,14 @@ impl Context {
         self.menu_stage = menu_stage
     }
 
+    pub fn editor_stage(&self) -> EditorStage {
+        self.editor_stage
+    }
+
+    pub fn set_editor_stage(&mut self, editor_stage: EditorStage) {
+        self.editor_stage = editor_stage
+    }
+
     pub fn project_index(&self) -> usize {
         self.project_index
     }
@@ -65,6 +79,14 @@ impl Context {
 
     pub fn set_task_index(&mut self, task_index: usize) {
         self.task_index = task_index
+    }
+
+    pub fn selected_task(&self) -> &Option<Task> {
+        &self.selected_task
+    }
+
+    pub fn set_selected_task(&mut self, selected_task: Option<Task>) {
+        self.selected_task = selected_task
     }
 }
 
@@ -124,6 +146,28 @@ impl MenuStage {
         match self {
             MenuStage::UPCOMING => MenuStage::TODAY,
             MenuStage::TODAY => MenuStage::UPCOMING,
+        }
+    }
+}
+
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
+pub enum EditorStage {
+    CONTENT,
+    DESCRIPTION,
+}
+
+impl EditorStage {
+    pub fn previous(&self) -> EditorStage {
+        match self {
+            EditorStage::CONTENT => EditorStage::DESCRIPTION,
+            EditorStage::DESCRIPTION => EditorStage::CONTENT,
+        }
+    }
+
+    pub fn next(&self) -> EditorStage {
+        match self {
+            EditorStage::DESCRIPTION => EditorStage::CONTENT,
+            EditorStage::CONTENT => EditorStage::DESCRIPTION,
         }
     }
 }
