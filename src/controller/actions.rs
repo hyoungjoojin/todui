@@ -1,6 +1,6 @@
 use super::{key::Key, state::State};
 use crate::{
-    app::context::{Context, ModalStage, SidebarStage, Stage},
+    app::context::{editor::EditorMode, Context, ModalStage, SidebarStage, Stage},
     model::Model,
 };
 
@@ -36,6 +36,15 @@ impl Key {
                 if context.stage() == Stage::SIDEBAR {
                     context.set_stage(Stage::BODY);
                     return State::Continue;
+                }
+
+                State::Continue
+            }),
+            Key::Insert => Box::new(|(_, context)| {
+                if context.stage() == Stage::EDITOR
+                    && *context.editor_context().mode() == EditorMode::NORMAL
+                {
+                    context.editor_context_mut().set_mode(EditorMode::INSERT);
                 }
 
                 State::Continue
@@ -78,6 +87,8 @@ impl Key {
             }),
             Key::Up => Box::new(|(_, context)| {
                 if context.stage() == Stage::EDITOR {
+                    let stage = context.editor_context().stage().previous();
+                    context.editor_context_mut().set_stage(stage);
                     return State::Continue;
                 }
 
@@ -86,6 +97,8 @@ impl Key {
                     if task_index != 0 {
                         context.set_task_index(task_index - 1);
                     }
+                    context.editor_context_mut().set_updated(true);
+
                     return State::Continue;
                 }
 
@@ -106,6 +119,8 @@ impl Key {
             }),
             Key::Down => Box::new(|(model, context)| {
                 if context.stage() == Stage::EDITOR {
+                    let stage = context.editor_context().stage().next();
+                    context.editor_context_mut().set_stage(stage);
                     return State::Continue;
                 }
 
@@ -114,6 +129,8 @@ impl Key {
                     if task_index + 1 != model.tasks().len() {
                         context.set_task_index(task_index + 1);
                     }
+                    context.editor_context_mut().set_updated(true);
+
                     return State::Continue;
                 }
 

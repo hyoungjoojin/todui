@@ -1,3 +1,9 @@
+pub mod editor;
+
+use editor::EditorContext;
+
+use crate::model::task::Task;
+
 pub struct Context {
     stage: Stage,
     modal_stage: ModalStage,
@@ -5,6 +11,8 @@ pub struct Context {
     menu_stage: MenuStage,
     project_index: usize,
     task_index: usize,
+    selected_task: Option<Task>,
+    editor_context: EditorContext,
 }
 
 impl Context {
@@ -16,6 +24,8 @@ impl Context {
             menu_stage: MenuStage::TODAY,
             project_index: 0,
             task_index: 0,
+            selected_task: None,
+            editor_context: EditorContext::new(),
         }
     }
 
@@ -65,6 +75,14 @@ impl Context {
 
     pub fn set_task_index(&mut self, task_index: usize) {
         self.task_index = task_index
+    }
+
+    pub fn selected_task(&self) -> &Option<Task> {
+        &self.selected_task
+    }
+
+    pub fn set_selected_task(&mut self, selected_task: Option<Task>) {
+        self.selected_task = selected_task
     }
 }
 

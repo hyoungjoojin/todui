@@ -1,3 +1,7 @@
+use crate::{
+    app::{context::editor::EditorStage, Context},
+    model::Model,
+};
 use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Style},
@@ -5,8 +9,6 @@ use ratatui::{
     widgets::{Block, Borders, Padding, Paragraph},
     Frame,
 };
-
-use crate::model::task::Task;
 
 const EDITOR_TITLE: &str = " Editor ";
 const ID_TITLE: &str = " Task ID ";
@@ -30,33 +32,37 @@ impl Editor {
         let inner_area = block.inner(area);
         frame.render_widget(block, area);
 
-        let EditorProps { task } = props;
+        let EditorProps {
+            stage,
+            id,
+            content,
+            description,
+        } = props;
 
-        let task = match task {
-            Some(task) => task,
-            None => {
-                return;
-            }
-        };
-
-        let id = Paragraph::new(Text::styled(task.id(), Style::default().fg(Color::White)))
+        let id = Paragraph::new(Text::styled(id, Style::default().fg(Color::White)))
             .block(Block::bordered().style(Color::White).title(ID_TITLE));
 
-        let content = Paragraph::new(Text::styled(
-            task.content(),
-            Style::default().fg(Color::White),
-        ))
-        .block(Block::bordered().style(Color::White).title(CONTENT_TITLE));
+        let content = Paragraph::new(Text::styled(content, Style::default().fg(Color::White)))
+            .block(
+                Block::bordered()
+                    .style(if stage == EditorStage::CONTENT {
+                        Color::Green
+                    } else {
+                        Color::White
+                    })
+                    .title(CONTENT_TITLE),
+            );
 
-        let description = Paragraph::new(Text::styled(
-            task.description(),
-            Style::default().fg(Color::White),
-        ))
-        .block(
-            Block::bordered()
-                .style(Color::White)
-                .title(DESCRIPTION_TITLE),
-        );
+        let description =
+            Paragraph::new(Text::styled(description, Style::default().fg(Color::White))).block(
+                Block::bordered()
+                    .style(if stage == EditorStage::DESCRIPTION {
+                        Color::Green
+                    } else {
+                        Color::White
+                    })
+                    .title(DESCRIPTION_TITLE),
+            );
 
         let panels = Layout::default()
             .direction(Direction::Vertical)
@@ -70,11 +76,24 @@ impl Editor {
 }
 
 pub struct EditorProps<'a> {
-    task: Option<&'a Task>,
+    stage: EditorStage,
+    id: String,
+    content: &'a String,
+    description: &'a String,
 }
 
-impl<'a> EditorProps<'a> {
-    pub fn new(task: Option<&'a Task>) -> EditorProps<'a> {
-        EditorProps { task }
+impl<'a> From<(&Model, &'a Context)> for EditorProps<'a> {
+    fn from((_, context): (&Model, &'a Context)) -> EditorProps<'a> {
+        let id = match context.selected_task() {
+            Some(task) => task.id().clone(),
+            None => String::new(),
+        };
+
+        EditorProps {
+            stage: *context.editor_context().stage(),
+            id,
+            content: context.editor_context().content(),
+            description: context.editor_context().description(),
+        }
     }
 }
