@@ -1,6 +1,6 @@
 use crate::{
     app::{context::editor::EditorStage, Context},
-    model::{task::Task, Model},
+    model::Model,
 };
 use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},

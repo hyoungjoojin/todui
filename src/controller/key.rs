@@ -6,6 +6,7 @@ pub enum Key {
     Quit,
     Escape,
     Enter,
+    Reload,
 
     Insert,
 
@@ -29,6 +30,7 @@ impl Key {
             KeyCode::Char('q') => Key::Quit,
             KeyCode::Esc => Key::Escape,
             KeyCode::Enter => Key::Enter,
+            KeyCode::Char('r') => Key::Reload,
             KeyCode::Char('h') => Key::Left,
             KeyCode::Char('l') => Key::Right,
             KeyCode::Char('k') => Key::Up,
@@ -48,6 +50,7 @@ impl Key {
             Key::Escape => "<Esc>".to_string(),
             Key::Enter => "<Enter>".to_string(),
             Key::Insert => "i".to_string(),
+            Key::Reload => "r".to_string(),
             Key::Left => "l".to_string(),
             Key::Right => "r".to_string(),
             Key::Up => "k".to_string(),
@@ -66,6 +69,7 @@ impl Key {
             Key::Escape => "Escape.".to_string(),
             Key::Enter => "Enter".to_string(),
             Key::Insert => "Enter insert mode.".to_string(),
+            Key::Reload => "Reload.".to_string(),
             Key::Left => "Move left.".to_string(),
             Key::Right => "Move right.".to_string(),
             Key::Up => "Move up.".to_string(),

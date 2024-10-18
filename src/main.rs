@@ -9,45 +9,45 @@ use crate::{
     canvas::Canvas,
     controller::{state::State, Controller},
     model::Model,
-    utils::api::RestClient,
 };
-use std::{process::exit, sync::Arc};
-use tokio::{self, sync::Mutex};
+use std::{sync::Arc, time::Duration};
+use tokio::{self, sync::Mutex, time::sleep};
 
 #[tokio::main]
 async fn main() {
-    let client = match RestClient::new() {
-        Some(client) => client,
-        None => exit(-1),
-    };
-
     let mut canvas = Canvas::new().expect("");
     let mut app = App::new();
     let controller: Controller = Controller::new();
 
-    let model = Arc::new(Mutex::new(Model::new()));
-    let model_clone = Arc::clone(&model);
-
-    tokio::spawn(async move {
-        let mut lock = model_clone.lock().await;
-        match lock.update(&client).await {
-            Ok(_) => {}
-            Err(error) => {
-                println!("{error:#?}");
-                return;
-            }
-        }
-    });
+    let model_lock = Arc::new(Mutex::new(Model::new().await));
 
     loop {
-        let model_clone = model.lock().await.clone();
+        let model = model_lock.lock().await;
 
         canvas
-            .draw(|frame| app.render(&model_clone, frame))
+            .draw(|frame| app.render(&model, frame))
             .expect("terminal has failed to draw");
 
-        match controller.run(&model_clone, app.context_mut()) {
-            State::Continue => continue,
+        let state = controller.run(&model, app.context_mut());
+
+        match state {
+            State::Continue => {
+                sleep(Duration::from_millis(100)).await;
+                continue;
+            }
+            State::Reload => {
+                let model_clone_lock = model_lock.clone();
+                tokio::spawn(async move {
+                    let mut model_clone = model_clone_lock.lock().await;
+                    match model_clone.update().await {
+                        Ok(_) => {}
+                        Err(error) => {
+                            println!("{error:#?}");
+                            return;
+                        }
+                    }
+                });
+            }
             _ => break,
         }
     }
