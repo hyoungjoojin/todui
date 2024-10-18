@@ -55,10 +55,25 @@ impl Body {
         } = self
             .tasks
             .render((model, context.borrow()).into(), frame, area[0]);
+
         context.set_task_index(task_index);
         context.set_selected_task(selected_task);
 
-        self.editor
-            .render((model, context.borrow()).into(), frame, area[1]);
+        if let Some(task) = context.selected_task().clone() {
+            if context.editor_context().updated() {
+                context
+                    .editor_context_mut()
+                    .set_content(task.content().clone());
+
+                context
+                    .editor_context_mut()
+                    .set_description(task.description().clone());
+
+                context.editor_context_mut().set_updated(false);
+            }
+
+            self.editor
+                .render((model, context.borrow()).into(), frame, area[1]);
+        }
     }
 }

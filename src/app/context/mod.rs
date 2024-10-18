@@ -1,3 +1,7 @@
+pub mod editor;
+
+use editor::EditorContext;
+
 use crate::model::task::Task;
 
 pub struct Context {
@@ -5,10 +9,10 @@ pub struct Context {
     modal_stage: ModalStage,
     sidebar_stage: SidebarStage,
     menu_stage: MenuStage,
-    editor_stage: EditorStage,
     project_index: usize,
     task_index: usize,
     selected_task: Option<Task>,
+    editor_context: EditorContext,
 }
 
 impl Context {
@@ -18,10 +22,10 @@ impl Context {
             modal_stage: ModalStage::OFF,
             sidebar_stage: SidebarStage::ABOUT,
             menu_stage: MenuStage::TODAY,
-            editor_stage: EditorStage::CONTENT,
             project_index: 0,
             task_index: 0,
             selected_task: None,
+            editor_context: EditorContext::new(),
         }
     }
 
@@ -55,14 +59,6 @@ impl Context {
 
     pub fn set_menu_stage(&mut self, menu_stage: MenuStage) {
         self.menu_stage = menu_stage
-    }
-
-    pub fn editor_stage(&self) -> EditorStage {
-        self.editor_stage
-    }
-
-    pub fn set_editor_stage(&mut self, editor_stage: EditorStage) {
-        self.editor_stage = editor_stage
     }
 
     pub fn project_index(&self) -> usize {
@@ -146,28 +142,6 @@ impl MenuStage {
         match self {
             MenuStage::UPCOMING => MenuStage::TODAY,
             MenuStage::TODAY => MenuStage::UPCOMING,
-        }
-    }
-}
-
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
-pub enum EditorStage {
-    CONTENT,
-    DESCRIPTION,
-}
-
-impl EditorStage {
-    pub fn previous(&self) -> EditorStage {
-        match self {
-            EditorStage::CONTENT => EditorStage::DESCRIPTION,
-            EditorStage::DESCRIPTION => EditorStage::CONTENT,
-        }
-    }
-
-    pub fn next(&self) -> EditorStage {
-        match self {
-            EditorStage::DESCRIPTION => EditorStage::CONTENT,
-            EditorStage::CONTENT => EditorStage::DESCRIPTION,
         }
     }
 }
