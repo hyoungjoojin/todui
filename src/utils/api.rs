@@ -11,6 +11,7 @@ pub enum HttpMethod {
     GET,
 }
 
+#[derive(Clone)]
 pub struct RestClient {
     client: reqwest::Client,
     token: String,

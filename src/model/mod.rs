@@ -2,13 +2,14 @@ pub mod project;
 pub mod task;
 
 use project::Project;
-use std::error::Error;
+use std::{error::Error, process::exit};
 use task::Task;
 
 use crate::utils::api::{HttpMethod, RestClient};
 
 #[derive(Clone)]
 pub struct Model {
+    client: RestClient,
     projects: Vec<Project>,
     tasks: Vec<Task>,
 }
@@ -16,6 +17,10 @@ pub struct Model {
 impl Model {
     pub fn new() -> Model {
         Model {
+            client: match RestClient::new() {
+                Some(client) => client,
+                None => exit(-1),
+            },
             projects: Vec::new(),
             tasks: Vec::new(),
         }
@@ -29,8 +34,8 @@ impl Model {
         &self.tasks
     }
 
-    pub async fn update(&mut self, client: &RestClient) -> Result<(), Box<dyn Error>> {
-        self.projects = client
+    pub async fn update(&mut self) -> Result<(), Box<dyn Error>> {
+        self.projects = self.client
             .send("/projects", HttpMethod::GET)
             .await?
             .json::<Vec<Project>>()
@@ -47,7 +52,7 @@ impl Model {
             })
             .collect();
 
-        self.tasks = client
+        self.tasks = self.client
             .send("/tasks", HttpMethod::GET)
             .await?
             .json::<Vec<Task>>()
