@@ -15,15 +15,25 @@ pub struct Model {
 }
 
 impl Model {
-    pub fn new() -> Model {
-        Model {
+    pub async fn new() -> Model {
+        let mut model = Model {
             client: match RestClient::new() {
                 Some(client) => client,
                 None => exit(-1),
             },
             projects: Vec::new(),
             tasks: Vec::new(),
+        };
+
+        match model.update().await {
+            Ok(_) => {}
+            Err(error) => {
+                println!("{error:#?}");
+                exit(-1);
+            }
         }
+
+        model
     }
 
     pub fn projects(&self) -> &Vec<Project> {
@@ -35,7 +45,8 @@ impl Model {
     }
 
     pub async fn update(&mut self) -> Result<(), Box<dyn Error>> {
-        self.projects = self.client
+        self.projects = self
+            .client
             .send("/projects", HttpMethod::GET)
             .await?
             .json::<Vec<Project>>()
@@ -52,7 +63,8 @@ impl Model {
             })
             .collect();
 
-        self.tasks = self.client
+        self.tasks = self
+            .client
             .send("/tasks", HttpMethod::GET)
             .await?
             .json::<Vec<Task>>()
