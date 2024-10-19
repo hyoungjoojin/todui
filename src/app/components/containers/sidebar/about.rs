@@ -10,7 +10,7 @@ use ratatui::{
     Frame,
 };
 
-const TITLE: &str = " [0] - ABOUT ";
+const TITLE: &str = " [0] - About ";
 
 pub struct About {}
 
@@ -25,7 +25,7 @@ impl About {
         let color = if on { Color::Green } else { Color::White };
 
         frame.render_widget(
-            Paragraph::new(Text::styled("todui", Style::default().fg(Color::White))).block(
+            Paragraph::new(Text::styled(" todui", Style::default().fg(Color::White))).block(
                 Block::default()
                     .borders(Borders::ALL)
                     .style(color)
