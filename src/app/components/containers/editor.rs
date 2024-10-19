@@ -1,6 +1,9 @@
 use crate::{
     app::{
-        context::editor::{EditorField, EditorStage},
+        context::editor::{
+            field::{EditorField, NUM_EDITOR_FIELDS},
+            EditorStage,
+        },
         Context,
     },
     model::Model,
@@ -72,7 +75,7 @@ impl Editor {
 
 pub struct EditorProps<'a> {
     stage: EditorStage,
-    fields: &'a [EditorField; 3],
+    fields: &'a [EditorField; NUM_EDITOR_FIELDS],
 }
 
 impl<'a> From<(&Model, &'a Context)> for EditorProps<'a> {

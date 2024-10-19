@@ -57,29 +57,23 @@ impl Tasks {
 
         if num_tasks <= height {
             frame.render_widget(content, area);
-            return TasksReturnProps {
-                task_index,
-                selected_task: match selected_task {
-                    Some(task) => Some(task.clone()),
-                    None => None,
-                },
-            };
+        } else {
+            frame.render_widget(
+                content.scroll(self.calculate_scroll_offset(task_index, num_tasks, height)),
+                area,
+            );
+
+            let (scrollbar, mut scrollbar_state) =
+                self.build_scrollbar(task_index, num_tasks, height);
+            frame.render_stateful_widget(
+                scrollbar,
+                area.inner(Margin {
+                    vertical: 1,
+                    horizontal: 0,
+                }),
+                &mut scrollbar_state,
+            );
         }
-
-        frame.render_widget(
-            content.scroll(self.calculate_scroll_offset(task_index, num_tasks, height)),
-            area,
-        );
-
-        let (scrollbar, mut scrollbar_state) = self.build_scrollbar(task_index, num_tasks, height);
-        frame.render_stateful_widget(
-            scrollbar,
-            area.inner(Margin {
-                vertical: 1,
-                horizontal: 0,
-            }),
-            &mut scrollbar_state,
-        );
 
         return TasksReturnProps {
             task_index,
