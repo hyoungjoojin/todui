@@ -3,10 +3,7 @@ pub mod key;
 pub mod state;
 
 use crate::{
-    app::context::{
-        editor::{EditorMode, EditorStage},
-        Context, Stage,
-    },
+    app::context::{editor::EditorMode, Context, Stage},
     controller::{key::Key, state::State},
     model::Model,
 };
@@ -34,25 +31,17 @@ impl Controller {
             && *context.editor_context().mode() == EditorMode::INSERT
         {
             if let KeyCode::Char(c) = key.code {
-                match *context.editor_context().stage() {
-                    EditorStage::CONTENT => {
-                        context.editor_context_mut().content_mut().push(c);
-                    }
-                    EditorStage::DESCRIPTION => {
-                        context.editor_context_mut().description_mut().push(c);
-                    }
-                }
+                let stage = *context.editor_context().stage();
+                context
+                    .editor_context_mut()
+                    .append_character_to_field(stage, c);
             };
 
             if key.code == KeyCode::Backspace {
-                match *context.editor_context().stage() {
-                    EditorStage::CONTENT => {
-                        context.editor_context_mut().content_mut().pop();
-                    }
-                    EditorStage::DESCRIPTION => {
-                        context.editor_context_mut().description_mut().pop();
-                    }
-                }
+                let stage = *context.editor_context().stage();
+                context
+                    .editor_context_mut()
+                    .delete_character_from_field(stage);
             };
 
             if key.code == KeyCode::Esc {

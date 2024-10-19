@@ -61,13 +61,11 @@ impl Body {
 
         if let Some(task) = context.selected_task().clone() {
             if context.editor_context().updated() {
-                context
-                    .editor_context_mut()
-                    .set_content(task.content().clone());
-
-                context
-                    .editor_context_mut()
-                    .set_description(task.description().clone());
+                context.editor_context_mut().set_fields([
+                    &task.id(),
+                    &task.content(),
+                    &task.description(),
+                ]);
 
                 context.editor_context_mut().set_updated(false);
             }

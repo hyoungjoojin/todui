@@ -1,5 +1,8 @@
 use crate::{
-    app::{context::editor::EditorStage, Context},
+    app::{
+        context::editor::{EditorField, EditorStage},
+        Context,
+    },
     model::Model,
 };
 use ratatui::{
@@ -11,9 +14,6 @@ use ratatui::{
 };
 
 const EDITOR_TITLE: &str = " Editor ";
-const ID_TITLE: &str = " Task ID ";
-const CONTENT_TITLE: &str = " Content ";
-const DESCRIPTION_TITLE: &str = " Description ";
 
 pub struct Editor {}
 
@@ -32,68 +32,54 @@ impl Editor {
         let inner_area = block.inner(area);
         frame.render_widget(block, area);
 
-        let EditorProps {
-            stage,
-            id,
-            content,
-            description,
-        } = props;
-
-        let id = Paragraph::new(Text::styled(id, Style::default().fg(Color::White)))
-            .block(Block::bordered().style(Color::White).title(ID_TITLE));
-
-        let content = Paragraph::new(Text::styled(content, Style::default().fg(Color::White)))
-            .block(
-                Block::bordered()
-                    .style(if stage == EditorStage::CONTENT {
-                        Color::Green
-                    } else {
-                        Color::White
-                    })
-                    .title(CONTENT_TITLE),
-            );
-
-        let description =
-            Paragraph::new(Text::styled(description, Style::default().fg(Color::White))).block(
-                Block::bordered()
-                    .style(if stage == EditorStage::DESCRIPTION {
-                        Color::Green
-                    } else {
-                        Color::White
-                    })
-                    .title(DESCRIPTION_TITLE),
-            );
+        let EditorProps { stage, fields } = props;
 
         let panels = Layout::default()
             .direction(Direction::Vertical)
-            .constraints([Constraint::Max(3), Constraint::Max(3), Constraint::Max(10)])
+            .constraints(
+                fields
+                    .to_vec()
+                    .iter()
+                    .map(|field| Constraint::Max(field.num_lines))
+                    .collect::<Vec<Constraint>>(),
+            )
             .split(inner_area);
 
-        frame.render_widget(id, panels[0]);
-        frame.render_widget(content, panels[1]);
-        frame.render_widget(description, panels[2]);
+        let _ = fields
+            .to_vec()
+            .iter()
+            .map(|field| {
+                Paragraph::new(Text::styled(
+                    field.value.clone(),
+                    Style::default().fg(Color::White),
+                ))
+                .block(
+                    Block::bordered()
+                        .style(if field.modifiable && stage == field.stage {
+                            Color::Green
+                        } else {
+                            Color::White
+                        })
+                        .title(field.title.as_ref()),
+                )
+            })
+            .enumerate()
+            .for_each(|(i, panel)| {
+                frame.render_widget(panel, panels[i]);
+            });
     }
 }
 
 pub struct EditorProps<'a> {
     stage: EditorStage,
-    id: String,
-    content: &'a String,
-    description: &'a String,
+    fields: &'a [EditorField; 3],
 }
 
 impl<'a> From<(&Model, &'a Context)> for EditorProps<'a> {
     fn from((_, context): (&Model, &'a Context)) -> EditorProps<'a> {
-        let id = match context.selected_task() {
-            Some(task) => task.id().clone(),
-            None => String::new(),
-        };
-
         EditorProps {
             stage: *context.editor_context().stage(),
-            id,
-            content: context.editor_context().content(),
-            description: context.editor_context().description(),
+            fields: context.editor_context().fields(),
         }
     }
 }

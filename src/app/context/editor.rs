@@ -1,4 +1,5 @@
 use super::Context;
+use std::borrow::Cow;
 
 impl Context {
     pub fn editor_context(&self) -> &EditorContext {
@@ -14,8 +15,7 @@ pub struct EditorContext {
     updated: bool,
     stage: EditorStage,
     mode: EditorMode,
-    content: String,
-    description: String,
+    fields: [EditorField; 3],
 }
 
 impl EditorContext {
@@ -24,8 +24,29 @@ impl EditorContext {
             updated: true,
             stage: EditorStage::CONTENT,
             mode: EditorMode::NORMAL,
-            content: String::new(),
-            description: String::new(),
+            fields: [
+                EditorField {
+                    stage: EditorStage::ID,
+                    title: Cow::Borrowed(" Task ID "),
+                    modifiable: false,
+                    value: String::new(),
+                    num_lines: 3,
+                },
+                EditorField {
+                    stage: EditorStage::CONTENT,
+                    title: Cow::Borrowed(" Content "),
+                    modifiable: true,
+                    value: String::new(),
+                    num_lines: 3,
+                },
+                EditorField {
+                    stage: EditorStage::DESCRIPTION,
+                    title: Cow::Borrowed(" Description "),
+                    modifiable: true,
+                    value: String::new(),
+                    num_lines: 10,
+                },
+            ],
         }
     }
 
@@ -53,33 +74,57 @@ impl EditorContext {
         self.mode = mode
     }
 
-    pub fn content(&self) -> &String {
-        &self.content
+    pub fn fields(&self) -> &[EditorField; 3] {
+        &self.fields
     }
 
-    pub fn content_mut(&mut self) -> &mut String {
-        &mut self.content
+    pub fn set_fields(&mut self, values: [&String; 3]) {
+        for i in 0..3 {
+            self.fields[i].value = values[i].clone();
+        }
     }
 
-    pub fn set_content(&mut self, content: String) {
-        self.content = content
+    pub fn append_character_to_field(&mut self, stage: EditorStage, c: char) {
+        match stage {
+            EditorStage::ID => {
+                self.fields[0].value.push(c);
+            }
+            EditorStage::CONTENT => {
+                self.fields[1].value.push(c);
+            }
+            EditorStage::DESCRIPTION => {
+                self.fields[2].value.push(c);
+            }
+        }
     }
 
-    pub fn description(&self) -> &String {
-        &self.description
+    pub fn delete_character_from_field(&mut self, stage: EditorStage) {
+        match stage {
+            EditorStage::ID => {
+                self.fields[0].value.pop();
+            }
+            EditorStage::CONTENT => {
+                self.fields[1].value.pop();
+            }
+            EditorStage::DESCRIPTION => {
+                self.fields[2].value.pop();
+            }
+        }
     }
+}
 
-    pub fn description_mut(&mut self) -> &mut String {
-        &mut self.description
-    }
-
-    pub fn set_description(&mut self, description: String) {
-        self.description = description
-    }
+#[derive(Clone)]
+pub struct EditorField {
+    pub stage: EditorStage,
+    pub title: Cow<'static, str>,
+    pub modifiable: bool,
+    pub value: String,
+    pub num_lines: u16,
 }
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub enum EditorStage {
+    ID,
     CONTENT,
     DESCRIPTION,
 }
@@ -87,6 +132,7 @@ pub enum EditorStage {
 impl EditorStage {
     pub fn previous(&self) -> EditorStage {
         match self {
+            EditorStage::ID => EditorStage::ID,
             EditorStage::CONTENT => EditorStage::DESCRIPTION,
             EditorStage::DESCRIPTION => EditorStage::CONTENT,
         }
@@ -94,6 +140,7 @@ impl EditorStage {
 
     pub fn next(&self) -> EditorStage {
         match self {
+            EditorStage::ID => EditorStage::ID,
             EditorStage::DESCRIPTION => EditorStage::CONTENT,
             EditorStage::CONTENT => EditorStage::DESCRIPTION,
         }
