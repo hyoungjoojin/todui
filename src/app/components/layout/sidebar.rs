@@ -5,7 +5,7 @@ use ratatui::{
 
 use crate::{
     app::{
-        components::containers::{about::About, menu::Menu, projects::Projects},
+        components::containers::sidebar::{about::About, menu::Menu, projects::Projects},
         context::Context,
     },
     model::Model,

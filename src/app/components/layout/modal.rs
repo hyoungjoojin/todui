@@ -1,4 +1,4 @@
-use crate::app::{components::containers::modals::HelpModal, context::ModalStage, Context};
+use crate::app::{components::containers::modal::help::HelpModal, context::ModalStage, Context};
 use ratatui::{
     layout::{Constraint, Flex, Layout, Rect},
     widgets::Clear,

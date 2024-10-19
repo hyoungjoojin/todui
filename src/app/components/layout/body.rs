@@ -2,12 +2,13 @@ use std::borrow::Borrow;
 
 use crate::{
     app::{
-        components::containers::{
+        components::containers::body::{
+            about::About,
             command::Command,
             editor::Editor,
             tasks::{Tasks, TasksReturnProps},
         },
-        context::{Context, Stage},
+        context::{Context, SidebarStage, Stage},
     },
     model::Model,
 };
@@ -17,6 +18,7 @@ use ratatui::{
 };
 
 pub struct Body {
+    about: About,
     tasks: Tasks,
     editor: Editor,
     command: Command,
@@ -25,6 +27,7 @@ pub struct Body {
 impl Body {
     pub fn new() -> Body {
         Body {
+            about: About::new(),
             tasks: Tasks::new(),
             command: Command::new(),
             editor: Editor::new(),
@@ -38,6 +41,12 @@ impl Body {
             .split(area);
 
         self.command.render(frame, panel[1]);
+
+        if context.sidebar_stage() == SidebarStage::ABOUT {
+            self.about.render(frame, panel[0]);
+            return;
+        }
+
         if context.stage() != Stage::EDITOR {
             self.tasks
                 .render((model, context.borrow()).into(), frame, panel[0]);
