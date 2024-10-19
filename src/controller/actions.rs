@@ -28,6 +28,10 @@ impl Key {
             }),
             Key::Reload => Box::new(|(_, _)| State::Reload),
             Key::Enter => Box::new(|(_, context)| {
+                if context.stage() == Stage::EDITOR {
+                    return State::PostTask;
+                }
+
                 if context.stage() == Stage::BODY {
                     context.set_stage(Stage::EDITOR);
                     return State::Continue;

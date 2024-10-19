@@ -3,4 +3,5 @@ pub enum State {
     Reload,
     Break,
     Error,
+    PostTask,
 }

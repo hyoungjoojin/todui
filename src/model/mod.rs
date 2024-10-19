@@ -36,6 +36,10 @@ impl Model {
         model
     }
 
+    pub fn client(&self) -> &RestClient {
+        &self.client
+    }
+
     pub fn projects(&self) -> &Vec<Project> {
         &self.projects
     }
@@ -47,7 +51,7 @@ impl Model {
     pub async fn update(&mut self) -> Result<(), Box<dyn Error>> {
         self.projects = self
             .client
-            .send("/projects", HttpMethod::GET)
+            .send("/projects", HttpMethod::GET, None)
             .await?
             .json::<Vec<Project>>()
             .await?
@@ -65,7 +69,7 @@ impl Model {
 
         self.tasks = self
             .client
-            .send("/tasks", HttpMethod::GET)
+            .send("/tasks", HttpMethod::GET, None)
             .await?
             .json::<Vec<Task>>()
             .await?
