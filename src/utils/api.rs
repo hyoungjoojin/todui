@@ -1,5 +1,6 @@
 use reqwest::{self, Response};
 use std::{
+    collections::HashMap,
     env::{self},
     io::{Error, ErrorKind::Other},
 };
@@ -9,6 +10,7 @@ const BASE_PATH: &str = "https://api.todoist.com/rest/v2";
 
 pub enum HttpMethod {
     GET,
+    POST,
 }
 
 #[derive(Clone)]
@@ -35,13 +37,21 @@ impl RestClient {
         })
     }
 
-    pub async fn send(&self, url: &str, method: HttpMethod) -> Result<Response, Error> {
+    pub async fn send(
+        &self,
+        url: &str,
+        method: HttpMethod,
+        body: Option<HashMap<&str, &str>>,
+    ) -> Result<Response, Error> {
+        let url = format!("{}{}", BASE_PATH, url);
+        let token = self.token.clone();
+
         let response = match method {
-            HttpMethod::GET => self
-                .client
-                .get(format!("{}{}", BASE_PATH, url))
-                .bearer_auth(self.token.clone())
-                .send(),
+            HttpMethod::GET => self.client.get(url).bearer_auth(token).send(),
+            HttpMethod::POST => match body {
+                Some(body) => self.client.post(url).bearer_auth(token).json(&body).send(),
+                None => self.client.post(url).bearer_auth(token).send(),
+            },
         }
         .await;
 

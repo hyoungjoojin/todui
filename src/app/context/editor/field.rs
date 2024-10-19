@@ -1,6 +1,5 @@
-use std::borrow::Cow;
-
 use super::{EditorContext, EditorStage};
+use std::{borrow::Cow, collections::HashMap};
 
 pub const NUM_EDITOR_FIELDS: usize = 3;
 
@@ -9,6 +8,7 @@ pub struct EditorField {
     pub stage: EditorStage,
     pub title: Cow<'static, str>,
     pub modifiable: bool,
+    pub key: Cow<'static, str>,
     pub value: String,
     pub num_lines: u16,
 }
@@ -20,6 +20,7 @@ impl EditorField {
                 stage: EditorStage::ID,
                 title: Cow::Borrowed(" Task ID "),
                 modifiable: false,
+                key: Cow::Borrowed("id"),
                 value: String::new(),
                 num_lines: 3,
             },
@@ -27,6 +28,7 @@ impl EditorField {
                 stage: EditorStage::CONTENT,
                 title: Cow::Borrowed(" Content "),
                 modifiable: true,
+                key: Cow::Borrowed("content"),
                 value: String::new(),
                 num_lines: 3,
             },
@@ -34,6 +36,7 @@ impl EditorField {
                 stage: EditorStage::DESCRIPTION,
                 title: Cow::Borrowed(" Description "),
                 modifiable: true,
+                key: Cow::Borrowed("description"),
                 value: String::new(),
                 num_lines: 10,
             },
@@ -54,10 +57,23 @@ impl EditorContext {
         &self.fields
     }
 
+    pub fn get_field(&self, stage: EditorStage) -> &EditorField {
+        &self.fields[EditorField::get_field_index(stage)]
+    }
+
     pub fn set_fields(&mut self, values: [&String; NUM_EDITOR_FIELDS]) {
         for i in 0..values.len() {
             self.fields[i].value = values[i].clone();
         }
+    }
+
+    pub fn build_body(&self) -> HashMap<&str, &str> {
+        let mut body: HashMap<&str, &str> = HashMap::new();
+        for i in 1..NUM_EDITOR_FIELDS {
+            body.insert(self.fields[i].key.as_ref(), self.fields[i].value.as_str());
+        }
+
+        body
     }
 
     pub fn append_character_to_field(&mut self, stage: EditorStage, c: char) {
