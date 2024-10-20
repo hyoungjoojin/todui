@@ -12,9 +12,22 @@ use crate::{
 };
 use std::{sync::Arc, time::Duration};
 use tokio::{self, sync::Mutex, time::sleep};
+use tracing::instrument;
+use tracing_subscriber::{fmt::layer, layer::SubscriberExt, util::SubscriberInitExt, Registry};
+use utils::log::initialize_log_file;
 
 #[tokio::main]
+#[instrument]
 async fn main() {
+    Registry::default()
+        .with(layer().with_ansi(false).with_writer(initialize_log_file()))
+        .init();
+
+    tracing::info!(
+        "Application [todui v{version}] has been successfully initialized.",
+        version = 0.1
+    );
+
     let mut canvas = Canvas::new().expect("");
     let mut app = App::new();
     let controller: Controller = Controller::new();
@@ -53,4 +66,9 @@ async fn main() {
     }
 
     canvas.clear();
+
+    tracing::info!(
+        "Application [todui v{version}] has been successfully terminated.",
+        version = 0.1
+    );
 }
