@@ -28,7 +28,7 @@ async fn main() {
         version = 0.1
     );
 
-    let mut canvas = Canvas::new().expect("");
+    let mut canvas = Canvas::new();
     let mut app = App::new();
     let controller: Controller = Controller::new();
 
@@ -37,9 +37,7 @@ async fn main() {
     loop {
         let model = model_lock.lock().await;
 
-        canvas
-            .draw(|frame| app.render(&model, frame))
-            .expect("terminal has failed to draw");
+        canvas.draw(|frame| app.render(&model, frame));
 
         let state = controller.run(&model, app.context_mut());
 
@@ -52,12 +50,12 @@ async fn main() {
                 let model_clone_lock = model_lock.clone();
                 tokio::spawn(async move {
                     let mut model_clone = model_clone_lock.lock().await;
-                    match model_clone.update().await {
-                        Ok(_) => {}
-                        Err(error) => {
-                            println!("{error:#?}");
-                            return;
-                        }
+
+                    if let Err(error) = model_clone.update().await {
+                        tracing::error!(
+                            "Model update has failed due to error {error}",
+                            error = error
+                        );
                     }
                 });
             }

@@ -36,20 +36,35 @@ impl RestClient {
     }
 
     pub async fn send(&self, url: &str, method: HttpMethod) -> Result<Response, Error> {
+        let url = format!("{}{}", BASE_PATH, url);
+        let token = self.token.clone();
+
         let response = match method {
-            HttpMethod::GET => self
-                .client
-                .get(format!("{}{}", BASE_PATH, url))
-                .bearer_auth(self.token.clone())
-                .send(),
+            HttpMethod::GET => {
+                tracing::info!("Sending GET request to {url}", url = url);
+                self.client.get(&url).bearer_auth(token).send()
+            }
         }
         .await;
 
         match response {
-            Ok(response) => {
-                return Ok(response);
-            }
-            Err(_) => {
+            Ok(response) => match response.error_for_status() {
+                Ok(response) => Ok(response),
+                Err(error) => {
+                    tracing::error!(
+                        "Network request sent to {url} sent back an error status: {error}.",
+                        url = url,
+                        error = error
+                    );
+                    return Err(Error::new(Other, "network request failed"));
+                }
+            },
+            Err(error) => {
+                tracing::error!(
+                    "Network request sent to {url} failed due to {error}.",
+                    url = url,
+                    error = error
+                );
                 return Err(Error::new(Other, "network request failed"));
             }
         }
