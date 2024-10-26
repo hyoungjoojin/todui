@@ -16,6 +16,8 @@ use tracing::instrument;
 use tracing_subscriber::{fmt::layer, layer::SubscriberExt, util::SubscriberInitExt, Registry};
 use utils::log::initialize_log_file;
 
+const VERSION: &'static str = env!("CARGO_PKG_VERSION");
+
 #[tokio::main]
 #[instrument]
 async fn main() {
@@ -25,7 +27,7 @@ async fn main() {
 
     tracing::info!(
         "Application [todui v{version}] has been successfully initialized.",
-        version = 0.1
+        version = VERSION
     );
 
     let mut canvas = Canvas::new();
@@ -67,6 +69,6 @@ async fn main() {
 
     tracing::info!(
         "Application [todui v{version}] has been successfully terminated.",
-        version = 0.1
+        version = VERSION
     );
 }
