@@ -47,21 +47,23 @@ impl RestClient {
         }
         .await;
 
-        match response {
-            Ok(response) => match response.error_for_status() {
-                Ok(response) => Ok(response),
-                Err(error) => {
-                    tracing::error!(
-                        "Network request sent to {url} sent back an error status: {error}.",
-                        url = url,
-                        error = error
-                    );
-                    return Err(Error::new(Other, "network request failed"));
-                }
-            },
+        let response = match response {
+            Ok(response) => response,
             Err(error) => {
                 tracing::error!(
                     "Network request sent to {url} failed due to {error}.",
+                    url = url,
+                    error = error
+                );
+                return Err(Error::new(Other, "network request failed"));
+            }
+        };
+
+        match response.error_for_status() {
+            Ok(response) => Ok(response),
+            Err(error) => {
+                tracing::error!(
+                    "Network request sent to {url} sent back an error status: {error}.",
                     url = url,
                     error = error
                 );
