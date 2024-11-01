@@ -10,7 +10,7 @@ pub struct Context {
     sidebar_stage: SidebarStage,
     menu_stage: MenuStage,
     project_index: usize,
-    task_index: usize,
+    // task_index: usize,
     selected_task: Option<Task>,
     editor_context: EditorContext,
 }
@@ -23,7 +23,7 @@ impl Context {
             sidebar_stage: SidebarStage::ABOUT,
             menu_stage: MenuStage::TODAY,
             project_index: 0,
-            task_index: 0,
+            // task_index: 0,
             selected_task: None,
             editor_context: EditorContext::new(),
         }
@@ -69,13 +69,13 @@ impl Context {
         self.project_index = project_index
     }
 
-    pub fn task_index(&self) -> usize {
-        self.task_index
-    }
+    // pub fn task_index(&self) -> usize {
+    //     self.task_index
+    // }
 
-    pub fn set_task_index(&mut self, task_index: usize) {
-        self.task_index = task_index
-    }
+    // pub fn set_task_index(&mut self, task_index: usize) {
+    //     self.task_index = task_index
+    // }
 
     pub fn selected_task(&self) -> &Option<Task> {
         &self.selected_task

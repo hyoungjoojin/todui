@@ -1,14 +1,19 @@
 use super::{key::Key, state::State};
 use crate::{
-    app::context::{editor::EditorMode, Context, ModalStage, SidebarStage, Stage},
+    app::{
+        context::{editor::EditorMode, ModalStage, SidebarStage, Stage},
+        App,
+    },
     model::Model,
 };
 
 impl Key {
-    pub fn get_action(key: &Key) -> Box<dyn Fn((&Model, &mut Context)) -> State> {
+    pub fn get_action(key: &Key) -> Box<dyn Fn((&Model, &mut App)) -> State> {
         match *key {
             Key::Quit => Box::new(|(_, _)| State::Break),
-            Key::Escape => Box::new(|(_, context)| {
+            Key::Escape => Box::new(|(_, app)| {
+                let context = app.context_mut();
+
                 if context.modal_stage() != ModalStage::OFF {
                     context.set_modal_stage(ModalStage::OFF);
                     return State::Continue;
@@ -27,7 +32,9 @@ impl Key {
                 State::Continue
             }),
             Key::Reload => Box::new(|(_, _)| State::Reload),
-            Key::Enter => Box::new(|(_, context)| {
+            Key::Enter => Box::new(|(_, app)| {
+                let context = app.context_mut();
+
                 if context.stage() == Stage::EDITOR {
                     return State::PostTask;
                 }
@@ -44,7 +51,9 @@ impl Key {
 
                 State::Continue
             }),
-            Key::Insert => Box::new(|(_, context)| {
+            Key::Insert => Box::new(|(_, app)| {
+                let context = app.context_mut();
+
                 if context.stage() == Stage::EDITOR
                     && *context.editor_context().mode() == EditorMode::NORMAL
                 {
@@ -53,7 +62,9 @@ impl Key {
 
                 State::Continue
             }),
-            Key::Left => Box::new(|(_, context)| {
+            Key::Left => Box::new(|(_, app)| {
+                let context = app.context_mut();
+
                 if context.stage() == Stage::EDITOR {
                     return State::Continue;
                 }
@@ -62,10 +73,13 @@ impl Key {
                     return State::Continue;
                 }
 
-                context.set_sidebar_stage(context.sidebar_stage().previous());
+                let sidebar_stage = context.sidebar_stage().previous();
+                context.set_sidebar_stage(sidebar_stage);
                 State::Continue
             }),
-            Key::Right => Box::new(|(_, context)| {
+            Key::Right => Box::new(|(_, app)| {
+                let context = app.context_mut();
+
                 if context.stage() == Stage::EDITOR {
                     return State::Continue;
                 }
@@ -74,22 +88,31 @@ impl Key {
                     return State::Continue;
                 }
 
-                context.set_sidebar_stage(context.sidebar_stage().next());
+                let sidebar_stage = context.sidebar_stage().next();
+                context.set_sidebar_stage(sidebar_stage);
                 State::Continue
             }),
-            Key::About => Box::new(|(_, context)| {
+            Key::About => Box::new(|(_, app)| {
+                let context = app.context_mut();
+
                 context.set_sidebar_stage(SidebarStage::ABOUT);
                 State::Continue
             }),
-            Key::Menu => Box::new(|(_, context)| {
+            Key::Menu => Box::new(|(_, app)| {
+                let context = app.context_mut();
+
                 context.set_sidebar_stage(SidebarStage::MENU);
                 State::Continue
             }),
-            Key::Projects => Box::new(|(_, context)| {
+            Key::Projects => Box::new(|(_, app)| {
+                let context = app.context_mut();
+
                 context.set_sidebar_stage(SidebarStage::PROJECTS);
                 State::Continue
             }),
-            Key::Up => Box::new(|(_, context)| {
+            Key::Up => Box::new(|(_, app)| {
+                let context = app.context_mut();
+
                 if context.stage() == Stage::EDITOR {
                     let stage = context.editor_context().stage().previous();
                     context.editor_context_mut().set_stage(stage);
@@ -97,17 +120,15 @@ impl Key {
                 }
 
                 if context.stage() == Stage::BODY {
-                    let task_index = context.task_index();
-                    if task_index != 0 {
-                        context.set_task_index(task_index - 1);
-                    }
                     context.editor_context_mut().set_updated(true);
+                    app.scroll_tasks_up();
 
                     return State::Continue;
                 }
 
                 if context.sidebar_stage() == SidebarStage::MENU {
-                    context.set_menu_stage(context.menu_stage().previous());
+                    let menu_stage = context.menu_stage().previous();
+                    context.set_menu_stage(menu_stage);
                     return State::Continue;
                 }
 
@@ -121,7 +142,9 @@ impl Key {
 
                 State::Continue
             }),
-            Key::Down => Box::new(|(model, context)| {
+            Key::Down => Box::new(|(model, app)| {
+                let context = app.context_mut();
+
                 if context.stage() == Stage::EDITOR {
                     let stage = context.editor_context().stage().next();
                     context.editor_context_mut().set_stage(stage);
@@ -129,17 +152,15 @@ impl Key {
                 }
 
                 if context.stage() == Stage::BODY {
-                    let task_index = context.task_index();
-                    if task_index + 1 != model.tasks().len() {
-                        context.set_task_index(task_index + 1);
-                    }
                     context.editor_context_mut().set_updated(true);
+                    app.scroll_tasks_down();
 
                     return State::Continue;
                 }
 
                 if context.sidebar_stage() == SidebarStage::MENU {
-                    context.set_menu_stage(context.menu_stage().next());
+                    let menu_stage = context.menu_stage().next();
+                    context.set_menu_stage(menu_stage);
                     return State::Continue;
                 }
 
@@ -153,7 +174,9 @@ impl Key {
 
                 State::Continue
             }),
-            Key::Help => Box::new(|(_, context)| {
+            Key::Help => Box::new(|(_, app)| {
+                let context = app.context_mut();
+
                 if context.modal_stage() != ModalStage::HELP {
                     context.set_modal_stage(ModalStage::HELP);
                 }

@@ -14,15 +14,15 @@ use ratatui::{
     Frame,
 };
 
-pub struct App {
+pub struct App<'a> {
     context: Context,
     sidebar: Sidebar,
-    body: Body,
+    pub body: Body<'a>,
     modal: Modal,
 }
 
-impl App {
-    pub fn new() -> App {
+impl<'a> App<'a> {
+    pub fn new() -> App<'a> {
         App {
             context: Context::new(),
             sidebar: Sidebar::new(),
@@ -46,5 +46,13 @@ impl App {
         self.sidebar.render(model, &self.context, frame, app[0]);
         self.body.render(model, &mut self.context, frame, app[1]);
         self.modal.render(&self.context, frame, area);
+    }
+
+    pub fn scroll_tasks_up(&mut self) {
+        self.body.tasks.scroll_up();
+    }
+
+    pub fn scroll_tasks_down(&mut self) {
+        self.body.tasks.scroll_down();
     }
 }
