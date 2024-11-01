@@ -1,7 +1,7 @@
 pub mod project;
 pub mod task;
 
-use project::Project;
+use project::{Project, ProjectManager};
 use std::{error::Error, process::exit};
 use task::Task;
 
@@ -10,7 +10,7 @@ use crate::utils::api::{HttpMethod, RestClient};
 #[derive(Clone)]
 pub struct Model {
     client: RestClient,
-    projects: Vec<Project>,
+    project_manager: ProjectManager,
     tasks: Vec<Task>,
 }
 
@@ -21,7 +21,7 @@ impl Model {
                 Some(client) => client,
                 None => exit(-1),
             },
-            projects: Vec::new(),
+            project_manager: ProjectManager::new(),
             tasks: Vec::new(),
         };
 
@@ -41,7 +41,7 @@ impl Model {
     }
 
     pub fn projects(&self) -> &Vec<Project> {
-        &self.projects
+        &self.project_manager.projects()
     }
 
     pub fn tasks(&self) -> &Vec<Task> {
@@ -49,23 +49,24 @@ impl Model {
     }
 
     pub async fn update(&mut self) -> Result<(), Box<dyn Error>> {
-        self.projects = self
-            .client
-            .send("/projects", HttpMethod::GET, None)
-            .await?
-            .json::<Vec<Project>>()
-            .await?
-            .iter()
-            .map(|project| {
-                let mut project = project.clone();
-                project.set_depth(match project.parent_id() {
-                    Some(_) => 1,
-                    None => 0,
-                });
+        self.project_manager.clear();
+        self.project_manager.extend(
+            self.client
+                .send("/projects", HttpMethod::GET, None)
+                .await?
+                .json::<Vec<Project>>()
+                .await?
+                .iter()
+                .map(|project| {
+                    let mut project = project.clone();
+                    project.set_depth(match project.parent_id() {
+                        Some(_) => 1,
+                        None => 0,
+                    });
 
-                project
-            })
-            .collect();
+                    project
+                }),
+        );
 
         self.tasks = self
             .client
@@ -74,7 +75,14 @@ impl Model {
             .json::<Vec<Task>>()
             .await?
             .iter()
-            .map(|task| task.clone())
+            .map(|task| {
+                let mut task = task.clone();
+                task.set_project_name(match self.project_manager.get_project(task.project_id()) {
+                    Some(project) => project.name().clone(),
+                    None => "Inbox".to_string(),
+                });
+                task
+            })
             .collect();
 
         Ok(())
