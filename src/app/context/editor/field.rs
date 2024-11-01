@@ -17,7 +17,7 @@ impl EditorField {
     pub fn build_initial_fields() -> [EditorField; NUM_EDITOR_FIELDS] {
         [
             EditorField {
-                stage: EditorStage::ID,
+                stage: EditorStage::Id,
                 title: Cow::Borrowed(" Task ID "),
                 modifiable: false,
                 key: Cow::Borrowed("id"),
@@ -25,7 +25,7 @@ impl EditorField {
                 num_lines: 3,
             },
             EditorField {
-                stage: EditorStage::CONTENT,
+                stage: EditorStage::Content,
                 title: Cow::Borrowed(" Content "),
                 modifiable: true,
                 key: Cow::Borrowed("content"),
@@ -33,7 +33,7 @@ impl EditorField {
                 num_lines: 3,
             },
             EditorField {
-                stage: EditorStage::DESCRIPTION,
+                stage: EditorStage::Description,
                 title: Cow::Borrowed(" Description "),
                 modifiable: true,
                 key: Cow::Borrowed("description"),
@@ -45,9 +45,9 @@ impl EditorField {
 
     pub fn get_field_index(stage: EditorStage) -> usize {
         match stage {
-            EditorStage::ID => 0,
-            EditorStage::CONTENT => 1,
-            EditorStage::DESCRIPTION => 2,
+            EditorStage::Id => 0,
+            EditorStage::Content => 1,
+            EditorStage::Description => 2,
         }
     }
 }
@@ -62,8 +62,8 @@ impl EditorContext {
     }
 
     pub fn set_fields(&mut self, values: [&String; NUM_EDITOR_FIELDS]) {
-        for i in 0..values.len() {
-            self.fields[i].value = values[i].clone();
+        for (index, value) in values.into_iter().enumerate() {
+            self.fields[index].value = value.clone();
         }
     }
 

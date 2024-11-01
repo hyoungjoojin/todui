@@ -13,12 +13,12 @@ use crate::{
 use app::context::editor::EditorStage;
 use std::{sync::Arc, time::Duration};
 use tokio::{self, sync::Mutex, time::sleep};
-use utils::api::HttpMethod;
 use tracing::instrument;
 use tracing_subscriber::{fmt::layer, layer::SubscriberExt, util::SubscriberInitExt, Registry};
+use utils::api::HttpMethod;
 use utils::log::initialize_log_file;
 
-const VERSION: &'static str = env!("CARGO_PKG_VERSION");
+const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[tokio::main]
 #[instrument]
@@ -67,7 +67,7 @@ async fn main() {
                 let id = app
                     .context_mut()
                     .editor_context()
-                    .get_field(EditorStage::ID)
+                    .get_field(EditorStage::Id)
                     .value
                     .clone();
 
@@ -75,7 +75,7 @@ async fn main() {
                     .client()
                     .send(
                         format!("/tasks/{}", id.as_str()).as_str(),
-                        HttpMethod::POST,
+                        HttpMethod::Post,
                         Some(app.context_mut().editor_context().build_body()),
                     )
                     .await

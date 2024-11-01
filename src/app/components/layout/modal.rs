@@ -13,7 +13,7 @@ impl Modal {
     }
 
     pub fn render(&self, context: &Context, frame: &mut Frame, area: Rect) {
-        if context.modal_stage() == ModalStage::OFF {
+        if context.modal_stage() == ModalStage::Off {
             return;
         }
 
@@ -28,7 +28,7 @@ impl Modal {
         frame.render_widget(Clear, area);
 
         let modal = match context.modal_stage() {
-            ModalStage::HELP => HelpModal::new(),
+            ModalStage::Help => HelpModal::new(),
             _ => {
                 return;
             }
