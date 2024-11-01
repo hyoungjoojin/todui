@@ -48,7 +48,7 @@ impl Editor {
             )
             .split(inner_area);
 
-        let _ = fields
+        fields
             .to_vec()
             .iter()
             .map(|field| {

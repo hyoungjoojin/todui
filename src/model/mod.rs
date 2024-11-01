@@ -51,7 +51,7 @@ impl Model {
     pub async fn update(&mut self) -> Result<(), Box<dyn Error>> {
         self.projects = self
             .client
-            .send("/projects", HttpMethod::GET, None)
+            .send("/projects", HttpMethod::Get, None)
             .await?
             .json::<Vec<Project>>()
             .await?
@@ -69,13 +69,11 @@ impl Model {
 
         self.tasks = self
             .client
-            .send("/tasks", HttpMethod::GET, None)
+            .send("/tasks", HttpMethod::Get, None)
             .await?
             .json::<Vec<Task>>()
             .await?
-            .iter()
-            .map(|task| task.clone())
-            .collect();
+            .to_vec();
 
         Ok(())
     }

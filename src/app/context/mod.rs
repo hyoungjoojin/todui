@@ -10,7 +10,6 @@ pub struct Context {
     sidebar_stage: SidebarStage,
     menu_stage: MenuStage,
     project_index: usize,
-    // task_index: usize,
     selected_task: Option<Task>,
     editor_context: EditorContext,
 }
@@ -18,12 +17,11 @@ pub struct Context {
 impl Context {
     pub fn new() -> Context {
         Context {
-            stage: Stage::SIDEBAR,
-            modal_stage: ModalStage::OFF,
-            sidebar_stage: SidebarStage::ABOUT,
-            menu_stage: MenuStage::TODAY,
+            stage: Stage::Sidebar,
+            modal_stage: ModalStage::Off,
+            sidebar_stage: SidebarStage::About,
+            menu_stage: MenuStage::Today,
             project_index: 0,
-            // task_index: 0,
             selected_task: None,
             editor_context: EditorContext::new(),
         }
@@ -69,14 +67,6 @@ impl Context {
         self.project_index = project_index
     }
 
-    // pub fn task_index(&self) -> usize {
-    //     self.task_index
-    // }
-
-    // pub fn set_task_index(&mut self, task_index: usize) {
-    //     self.task_index = task_index
-    // }
-
     pub fn selected_task(&self) -> &Option<Task> {
         &self.selected_task
     }
@@ -88,60 +78,60 @@ impl Context {
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub enum Stage {
-    SIDEBAR,
-    BODY,
-    EDITOR,
+    Sidebar,
+    Body,
+    Editor,
 }
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub enum ModalStage {
-    OFF,
-    HELP,
+    Off,
+    Help,
 }
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub enum SidebarStage {
-    ABOUT,
-    MENU,
-    PROJECTS,
+    About,
+    Menu,
+    Projects,
 }
 
 impl SidebarStage {
     pub fn previous(&self) -> SidebarStage {
         match self {
-            SidebarStage::ABOUT => SidebarStage::PROJECTS,
-            SidebarStage::MENU => SidebarStage::ABOUT,
-            SidebarStage::PROJECTS => SidebarStage::MENU,
+            SidebarStage::About => SidebarStage::Projects,
+            SidebarStage::Menu => SidebarStage::About,
+            SidebarStage::Projects => SidebarStage::Menu,
         }
     }
 
     pub fn next(&self) -> SidebarStage {
         match self {
-            SidebarStage::ABOUT => SidebarStage::MENU,
-            SidebarStage::MENU => SidebarStage::PROJECTS,
-            SidebarStage::PROJECTS => SidebarStage::ABOUT,
+            SidebarStage::About => SidebarStage::Menu,
+            SidebarStage::Menu => SidebarStage::Projects,
+            SidebarStage::Projects => SidebarStage::About,
         }
     }
 }
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub enum MenuStage {
-    TODAY,
-    UPCOMING,
+    Today,
+    Upcoming,
 }
 
 impl MenuStage {
     pub fn previous(&self) -> MenuStage {
         match self {
-            MenuStage::TODAY => MenuStage::UPCOMING,
-            MenuStage::UPCOMING => MenuStage::TODAY,
+            MenuStage::Today => MenuStage::Upcoming,
+            MenuStage::Upcoming => MenuStage::Today,
         }
     }
 
     pub fn next(&self) -> MenuStage {
         match self {
-            MenuStage::UPCOMING => MenuStage::TODAY,
-            MenuStage::TODAY => MenuStage::UPCOMING,
+            MenuStage::Upcoming => MenuStage::Today,
+            MenuStage::Today => MenuStage::Upcoming,
         }
     }
 }

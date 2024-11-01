@@ -72,11 +72,8 @@ impl<'a> Tasks<'a> {
         frame.render_stateful_widget(table, area, &mut self.table_state);
 
         if height < num_tasks {
-            match self.table_state.selected() {
-                Some(index) => {
-                    self.scrollbar_state = self.scrollbar_state.position(index);
-                }
-                None => {}
+            if let Some(index) = self.table_state.selected() {
+                self.scrollbar_state = self.scrollbar_state.position(index);
             }
 
             frame.render_stateful_widget(
@@ -89,12 +86,12 @@ impl<'a> Tasks<'a> {
             );
         }
 
-        return TasksReturnProps {
-            selected_task: match self.table_state.selected() {
-                Some(index) => Some(tasks[index].clone()),
-                None => None,
-            },
-        };
+        TasksReturnProps {
+            selected_task: self
+                .table_state
+                .selected()
+                .map(|index| tasks[index].clone()),
+        }
     }
 
     pub fn scroll_down(&mut self) {
@@ -113,20 +110,20 @@ pub struct TasksProps<'a> {
 
 impl<'a> From<(&'a Model, &Context)> for TasksProps<'a> {
     fn from((model, context): (&'a Model, &Context)) -> TasksProps<'a> {
-        let on = context.stage() == Stage::BODY;
+        let on = context.stage() == Stage::Body;
 
         let project = model.projects().get(context.project_index());
 
         let filter: Box<dyn Fn(&&Task) -> bool> = match context.sidebar_stage() {
-            SidebarStage::ABOUT => Box::new(|_: &&Task| false),
-            SidebarStage::MENU => match context.menu_stage() {
-                MenuStage::TODAY => Box::new(|task: &&Task| match *task.due() {
+            SidebarStage::About => Box::new(|_: &&Task| false),
+            SidebarStage::Menu => match context.menu_stage() {
+                MenuStage::Today => Box::new(|task: &&Task| match *task.due() {
                     Some(due) => *due.date() == get_current_date(),
                     None => false,
                 }),
-                MenuStage::UPCOMING => Box::new(|_: &&Task| true),
+                MenuStage::Upcoming => Box::new(|_: &&Task| true),
             },
-            SidebarStage::PROJECTS => Box::new(move |task: &&Task| match project {
+            SidebarStage::Projects => Box::new(move |task: &&Task| match project {
                 Some(project) => task.project_id() == project.id(),
                 None => false,
             }),

@@ -2,17 +2,9 @@ use chrono::{Local, NaiveDate};
 
 pub mod naive_date_serializer {
     use chrono::NaiveDate;
-    use serde::{de::Error, Deserialize, Deserializer, Serializer};
+    use serde::{de::Error, Deserialize, Deserializer};
 
-    const FORMAT: &'static str = "%Y-%m-%d";
-
-    pub fn serialize<S>(date: &NaiveDate, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let s = format!("{}", date.format(FORMAT));
-        serializer.serialize_str(&s)
-    }
+    const FORMAT: &str = "%Y-%m-%d";
 
     pub fn deserialize<'d, D>(deserializer: D) -> Result<NaiveDate, D::Error>
     where
@@ -25,5 +17,5 @@ pub mod naive_date_serializer {
 }
 
 pub fn get_current_date() -> NaiveDate {
-    NaiveDate::try_from(Local::now().naive_local()).unwrap()
+    NaiveDate::from(Local::now().naive_local())
 }
