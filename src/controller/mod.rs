@@ -1,11 +1,16 @@
+mod actions;
+pub mod key;
 pub mod state;
 
 use crate::{
+    app::{
+        context::{editor::EditorMode, Stage},
+        App,
+    },
+    controller::{key::Key, state::State},
     model::Model,
-    view::context::{SidebarStage, ViewContext},
 };
-use crossterm::event::{self, Event, KeyEvent};
-use state::State;
+use crossterm::event::{self, Event, KeyCode, KeyEvent};
 
 pub struct Controller {}
 
@@ -14,7 +19,7 @@ impl Controller {
         Controller {}
     }
 
-    pub fn run(&self, model: &Model, view_context: &mut ViewContext) -> State {
+    pub fn run(&self, model: &Model, app: &mut App) -> State {
         let key: KeyEvent = match event::read() {
             Ok(Event::Key(key)) => key,
             Ok(_) => return State::Continue,
@@ -25,55 +30,33 @@ impl Controller {
             return State::Break;
         }
 
-        match key.code {
-            event::KeyCode::Char('q') => State::Break,
-            event::KeyCode::Char('h') => {
-                view_context.set_sidebar_stage(view_context.sidebar_stage().previous());
-                State::Continue
-            }
-            event::KeyCode::Char('l') => {
-                view_context.set_sidebar_stage(view_context.sidebar_stage().next());
-                State::Continue
-            }
-            event::KeyCode::Char('j') => {
-                if *view_context.sidebar_stage() != SidebarStage::PROJECTS {
-                    return State::Continue;
-                }
+        let context = app.context_mut();
 
-                let project_index = view_context.project_index();
-                if project_index + 1 != model.projects().len() {
-                    view_context.set_project_index(project_index + 1);
-                }
+        if context.stage() == Stage::EDITOR
+            && *context.editor_context().mode() == EditorMode::INSERT
+        {
+            if let KeyCode::Char(c) = key.code {
+                let stage = context.editor_context().stage().clone();
+                context
+                    .editor_context_mut()
+                    .append_character_to_field(stage, c);
+            };
 
-                State::Continue
+            if key.code == KeyCode::Backspace {
+                let stage = context.editor_context().stage().clone();
+                context
+                    .editor_context_mut()
+                    .delete_character_from_field(stage);
+            };
+
+            if key.code == KeyCode::Esc {
+                context.editor_context_mut().set_mode(EditorMode::NORMAL);
             }
-            event::KeyCode::Char('k') => {
-                if *view_context.sidebar_stage() != SidebarStage::PROJECTS {
-                    return State::Continue;
-                }
 
-                let project_index = view_context.project_index();
-                if project_index != 0 {
-                    view_context.set_project_index(project_index - 1);
-                }
-
-                State::Continue
-            }
-            event::KeyCode::Enter => {
-                if view_context.sidebar() {
-                    view_context.toggle_sidebar();
-                }
-
-                State::Continue
-            }
-            event::KeyCode::Esc => {
-                if !view_context.sidebar() {
-                    view_context.toggle_sidebar();
-                }
-
-                State::Continue
-            }
-            _ => State::Continue,
+            return State::Continue;
         }
+
+        let key = Key::from_keycode(key.code);
+        Key::get_action(&key)((model, app))
     }
 }

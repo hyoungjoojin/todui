@@ -1,58 +1,94 @@
+mod app;
 mod canvas;
 mod controller;
 mod model;
 mod utils;
-mod view;
-use tokio;
-
-use std::{process::exit, sync::Arc};
-use tokio::sync::Mutex;
 
 use crate::{
+    app::App,
     canvas::Canvas,
     controller::{state::State, Controller},
     model::Model,
-    utils::api::RestClient,
-    view::View,
 };
+use app::context::editor::EditorStage;
+use std::{sync::Arc, time::Duration};
+use tokio::{self, sync::Mutex, time::sleep};
+use utils::api::HttpMethod;
+use tracing::instrument;
+use tracing_subscriber::{fmt::layer, layer::SubscriberExt, util::SubscriberInitExt, Registry};
+use utils::log::initialize_log_file;
+
+const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
 #[tokio::main]
+#[instrument]
 async fn main() {
-    let client = match RestClient::new() {
-        Some(client) => client,
-        None => exit(-1),
-    };
+    Registry::default()
+        .with(layer().with_ansi(false).with_writer(initialize_log_file()))
+        .init();
 
-    let mut canvas = Canvas::new().expect("");
-    let mut view: View = View::new();
+    tracing::info!(
+        "Application [todui v{version}] has been successfully initialized.",
+        version = VERSION
+    );
+
+    let mut canvas = Canvas::new();
+    let mut app = App::new();
     let controller: Controller = Controller::new();
 
-    let model = Arc::new(Mutex::new(Model::new()));
-    let model_clone = Arc::clone(&model);
-
-    tokio::spawn(async move {
-        let mut lock = model_clone.lock().await;
-        match lock.update(&client).await {
-            Ok(_) => {}
-            Err(error) => {
-                println!("{error:#?}");
-                return;
-            }
-        }
-    });
+    let model_lock = Arc::new(Mutex::new(Model::new().await));
 
     loop {
-        let model_clone = model.lock().await.clone();
+        let model = model_lock.lock().await;
 
-        canvas
-            .draw(|frame| view.render(&model_clone, frame))
-            .expect("terminal has failed to draw");
+        canvas.draw(|frame| app.render(&model, frame));
 
-        match controller.run(&model_clone, &mut view.context_mut()) {
-            State::Continue => continue,
+        let state = controller.run(&model, &mut app);
+
+        match state {
+            State::Continue => {
+                sleep(Duration::from_millis(100)).await;
+                continue;
+            }
+            State::Reload => {
+                let model_clone_lock = model_lock.clone();
+                tokio::spawn(async move {
+                    let mut model_clone = model_clone_lock.lock().await;
+
+                    if let Err(error) = model_clone.update().await {
+                        tracing::error!(
+                            "Model update has failed due to error {error}",
+                            error = error
+                        );
+                    }
+                });
+            }
+            State::PostTask => {
+                let id = app
+                    .context_mut()
+                    .editor_context()
+                    .get_field(EditorStage::ID)
+                    .value
+                    .clone();
+
+                model
+                    .client()
+                    .send(
+                        format!("/tasks/{}", id.as_str()).as_str(),
+                        HttpMethod::POST,
+                        Some(app.context_mut().editor_context().build_body()),
+                    )
+                    .await
+                    .unwrap();
+            }
             _ => break,
         }
     }
 
     canvas.clear();
+
+    tracing::info!(
+        "Application [todui v{version}] has been successfully terminated.",
+        version = VERSION
+    );
 }
