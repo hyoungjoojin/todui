@@ -41,7 +41,7 @@ async fn main() {
 
         canvas.draw(|frame| app.render(&model, frame));
 
-        let state = controller.run(&model, app.context_mut());
+        let state = controller.run(&model, &mut app);
 
         match state {
             State::Continue => {

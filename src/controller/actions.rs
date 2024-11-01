@@ -1,157 +1,169 @@
 use super::{key::Key, state::State};
 use crate::{
-    app::context::{editor::EditorMode, Context, ModalStage, SidebarStage, Stage},
+    app::{
+        context::{editor::EditorMode, ModalStage, SidebarStage, Stage},
+        App,
+    },
     model::Model,
 };
 
 impl Key {
-    pub fn get_action(key: &Key) -> Box<dyn Fn((&Model, &mut Context)) -> State> {
+    pub fn get_action(key: &Key) -> Box<dyn Fn((&Model, &mut App)) -> State> {
         match *key {
             Key::Quit => Box::new(|(_, _)| State::Break),
-            Key::Escape => Box::new(|(_, context)| {
-                if context.modal_stage() != ModalStage::OFF {
-                    context.set_modal_stage(ModalStage::OFF);
+            Key::Escape => Box::new(|(_, app)| {
+                if app.context_mut().modal_stage() != ModalStage::OFF {
+                    app.context_mut().set_modal_stage(ModalStage::OFF);
                     return State::Continue;
                 }
 
-                if context.stage() == Stage::EDITOR {
-                    context.set_stage(Stage::BODY);
+                if app.context_mut().stage() == Stage::EDITOR {
+                    app.context_mut().set_stage(Stage::BODY);
                     return State::Continue;
                 }
 
-                if context.stage() == Stage::BODY {
-                    context.set_stage(Stage::SIDEBAR);
+                if app.context_mut().stage() == Stage::BODY {
+                    app.context_mut().set_stage(Stage::SIDEBAR);
                     return State::Continue;
                 }
 
                 State::Continue
             }),
             Key::Reload => Box::new(|(_, _)| State::Reload),
-            Key::Enter => Box::new(|(_, context)| {
-                if context.stage() == Stage::BODY {
-                    context.set_stage(Stage::EDITOR);
+            Key::Enter => Box::new(|(_, app)| {
+                if app.context_mut().stage() == Stage::BODY {
+                    app.context_mut().set_stage(Stage::EDITOR);
                     return State::Continue;
                 }
 
-                if context.stage() == Stage::SIDEBAR {
-                    context.set_stage(Stage::BODY);
+                if app.context_mut().stage() == Stage::SIDEBAR {
+                    app.context_mut().set_stage(Stage::BODY);
                     return State::Continue;
                 }
 
                 State::Continue
             }),
-            Key::Insert => Box::new(|(_, context)| {
-                if context.stage() == Stage::EDITOR
-                    && *context.editor_context().mode() == EditorMode::NORMAL
+            Key::Insert => Box::new(|(_, app)| {
+                if app.context_mut().stage() == Stage::EDITOR
+                    && *app.context_mut().editor_context().mode() == EditorMode::NORMAL
                 {
-                    context.editor_context_mut().set_mode(EditorMode::INSERT);
+                    app.context_mut()
+                        .editor_context_mut()
+                        .set_mode(EditorMode::INSERT);
                 }
 
                 State::Continue
             }),
-            Key::Left => Box::new(|(_, context)| {
-                if context.stage() == Stage::EDITOR {
+            Key::Left => Box::new(|(_, app)| {
+                if app.context_mut().stage() == Stage::EDITOR {
                     return State::Continue;
                 }
 
-                if context.stage() == Stage::BODY {
+                if app.context_mut().stage() == Stage::BODY {
                     return State::Continue;
                 }
 
-                context.set_sidebar_stage(context.sidebar_stage().previous());
+                let sidebar_stage = app.context_mut().sidebar_stage().previous();
+                app.context_mut().set_sidebar_stage(sidebar_stage);
                 State::Continue
             }),
-            Key::Right => Box::new(|(_, context)| {
-                if context.stage() == Stage::EDITOR {
+            Key::Right => Box::new(|(_, app)| {
+                if app.context_mut().stage() == Stage::EDITOR {
                     return State::Continue;
                 }
 
-                if context.stage() == Stage::BODY {
+                if app.context_mut().stage() == Stage::BODY {
                     return State::Continue;
                 }
 
-                context.set_sidebar_stage(context.sidebar_stage().next());
+                let sidebar_stage = app.context_mut().sidebar_stage().next();
+                app.context_mut().set_sidebar_stage(sidebar_stage);
                 State::Continue
             }),
-            Key::About => Box::new(|(_, context)| {
-                context.set_sidebar_stage(SidebarStage::ABOUT);
+            Key::About => Box::new(|(_, app)| {
+                app.context_mut().set_sidebar_stage(SidebarStage::ABOUT);
                 State::Continue
             }),
-            Key::Menu => Box::new(|(_, context)| {
-                context.set_sidebar_stage(SidebarStage::MENU);
+            Key::Menu => Box::new(|(_, app)| {
+                app.context_mut().set_sidebar_stage(SidebarStage::MENU);
                 State::Continue
             }),
-            Key::Projects => Box::new(|(_, context)| {
-                context.set_sidebar_stage(SidebarStage::PROJECTS);
+            Key::Projects => Box::new(|(_, app)| {
+                app.context_mut().set_sidebar_stage(SidebarStage::PROJECTS);
                 State::Continue
             }),
-            Key::Up => Box::new(|(_, context)| {
-                if context.stage() == Stage::EDITOR {
-                    let stage = context.editor_context().stage().previous();
-                    context.editor_context_mut().set_stage(stage);
+            Key::Up => Box::new(|(_, app)| {
+                if app.context_mut().stage() == Stage::EDITOR {
+                    let stage = app.context_mut().editor_context().stage().previous();
+                    app.context_mut().editor_context_mut().set_stage(stage);
                     return State::Continue;
                 }
 
-                if context.stage() == Stage::BODY {
-                    let task_index = context.task_index();
-                    if task_index != 0 {
-                        context.set_task_index(task_index - 1);
-                    }
-                    context.editor_context_mut().set_updated(true);
+                if app.context_mut().stage() == Stage::BODY {
+                    app.scroll_tasks_up();
+                    // app.scroll_tasks_down();
+                    // let task_index = app.context_mut().task_index();
+                    // if task_index != 0 {
+                    //     app.context_mut().set_task_index(task_index - 1);
+                    // }
+                    app.context_mut().editor_context_mut().set_updated(true);
 
                     return State::Continue;
                 }
 
-                if context.sidebar_stage() == SidebarStage::MENU {
-                    context.set_menu_stage(context.menu_stage().previous());
+                if app.context_mut().sidebar_stage() == SidebarStage::MENU {
+                    let menu_stage = app.context_mut().menu_stage().previous();
+                    app.context_mut().set_menu_stage(menu_stage);
                     return State::Continue;
                 }
 
-                if context.sidebar_stage() == SidebarStage::PROJECTS {
-                    let project_index = context.project_index();
+                if app.context_mut().sidebar_stage() == SidebarStage::PROJECTS {
+                    let project_index = app.context_mut().project_index();
                     if project_index != 0 {
-                        context.set_project_index(project_index - 1);
+                        app.context_mut().set_project_index(project_index - 1);
                     }
                     return State::Continue;
                 }
 
                 State::Continue
             }),
-            Key::Down => Box::new(|(model, context)| {
-                if context.stage() == Stage::EDITOR {
-                    let stage = context.editor_context().stage().next();
-                    context.editor_context_mut().set_stage(stage);
+            Key::Down => Box::new(|(model, app)| {
+                if app.context_mut().stage() == Stage::EDITOR {
+                    let stage = app.context_mut().editor_context().stage().next();
+                    app.context_mut().editor_context_mut().set_stage(stage);
                     return State::Continue;
                 }
 
-                if context.stage() == Stage::BODY {
-                    let task_index = context.task_index();
-                    if task_index + 1 != model.tasks().len() {
-                        context.set_task_index(task_index + 1);
-                    }
-                    context.editor_context_mut().set_updated(true);
+                if app.context_mut().stage() == Stage::BODY {
+                    app.scroll_tasks_down();
+                    // let task_index = app.context_mut().task_index();
+                    // if task_index + 1 != model.tasks().len() {
+                    //     app.context_mut().set_task_index(task_index + 1);
+                    // }
+                    app.context_mut().editor_context_mut().set_updated(true);
 
                     return State::Continue;
                 }
 
-                if context.sidebar_stage() == SidebarStage::MENU {
-                    context.set_menu_stage(context.menu_stage().next());
+                if app.context_mut().sidebar_stage() == SidebarStage::MENU {
+                    let menu_stage = app.context_mut().menu_stage().next();
+                    app.context_mut().set_menu_stage(menu_stage);
                     return State::Continue;
                 }
 
-                if context.sidebar_stage() == SidebarStage::PROJECTS {
-                    let project_index = context.project_index();
+                if app.context_mut().sidebar_stage() == SidebarStage::PROJECTS {
+                    let project_index = app.context_mut().project_index();
                     if project_index + 1 != model.projects().len() {
-                        context.set_project_index(project_index + 1);
+                        app.context_mut().set_project_index(project_index + 1);
                     }
                     return State::Continue;
                 }
 
                 State::Continue
             }),
-            Key::Help => Box::new(|(_, context)| {
-                if context.modal_stage() != ModalStage::HELP {
-                    context.set_modal_stage(ModalStage::HELP);
+            Key::Help => Box::new(|(_, app)| {
+                if app.context_mut().modal_stage() != ModalStage::HELP {
+                    app.context_mut().set_modal_stage(ModalStage::HELP);
                 }
 
                 State::Continue

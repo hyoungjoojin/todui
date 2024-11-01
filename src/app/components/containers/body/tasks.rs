@@ -4,132 +4,110 @@ use crate::{
     utils::date::get_current_date,
 };
 use ratatui::{
-    layout::{Margin, Rect},
-    style::Color,
-    text::{Line, Span, Text},
-    widgets::{Block, Borders, Paragraph, Scrollbar, ScrollbarState},
+    layout::{Constraint, Margin, Rect},
+    style::{Color, Style},
+    widgets::{Block, Borders, Cell, Row, Scrollbar, ScrollbarState, Table, TableState},
     Frame,
 };
 
 const TITLE: &str = " Tasks ";
 
-pub struct Tasks {}
+pub struct Tasks<'a> {
+    table_state: TableState,
+    scrollbar: Scrollbar<'a>,
+    scrollbar_state: ScrollbarState,
+}
 
-impl Tasks {
-    pub fn new() -> Tasks {
-        Tasks {}
+impl<'a> Tasks<'a> {
+    pub fn new() -> Tasks<'a> {
+        let scrollbar = Scrollbar::new(ratatui::widgets::ScrollbarOrientation::VerticalRight)
+            .begin_symbol(Some("↑"))
+            .end_symbol(Some("↓"))
+            .thumb_symbol("▒");
+
+        let scrollbar_state = ScrollbarState::new(0).position(0);
+
+        Tasks {
+            table_state: TableState::default().with_selected(1),
+            scrollbar,
+            scrollbar_state,
+        }
     }
 
-    pub fn render(&self, props: TasksProps, frame: &mut Frame, area: Rect) -> TasksReturnProps {
-        let TasksProps {
-            on,
-            task_index,
-            tasks,
-        } = props;
+    pub fn render(&mut self, props: TasksProps, frame: &mut Frame, area: Rect) -> TasksReturnProps {
+        let TasksProps { on, tasks } = props;
+
+        self.scrollbar_state = self.scrollbar_state.content_length(tasks.len());
 
         let height = area.height as usize - 2;
         let num_tasks = tasks.len();
         let color = if on { Color::Green } else { Color::White };
 
-        let mut selected_task: Option<&Task> = None;
-        let tasks: Vec<Line> = tasks
-            .iter()
-            .enumerate()
-            .map(|(index, task)| {
-                Line::from(Span::styled(
-                    format!("{}", task.content()),
-                    if index == task_index {
-                        selected_task = Some(task);
-                        Color::Green
-                    } else {
-                        Color::White
-                    },
-                ))
-            })
-            .collect();
+        let header = ["Project", "Content", "Due Date", "Priority"]
+            .into_iter()
+            .map(Cell::from)
+            .collect::<Row>()
+            .style(Style::default().fg(Color::White).bg(Color::Black));
 
-        let content = Paragraph::new(Text::from(tasks)).block(
+        let table = Table::new(
+            tasks
+                .iter()
+                .map(|task| Row::from(task).style(Style::new().fg(Color::White))),
+            [
+                Constraint::Length(10),
+                Constraint::Max(area.width * 2 / 3),
+                Constraint::Length(11),
+                Constraint::Length(8),
+            ],
+        )
+        .header(header)
+        .highlight_style(Style::new().fg(Color::Green))
+        .block(
             Block::default()
                 .borders(Borders::ALL)
                 .style(color)
                 .title(TITLE),
         );
 
-        if num_tasks <= height {
-            frame.render_widget(content, area);
-        } else {
-            frame.render_widget(
-                content.scroll(self.calculate_scroll_offset(task_index, num_tasks, height)),
-                area,
-            );
+        frame.render_stateful_widget(table, area, &mut self.table_state);
 
-            let (scrollbar, mut scrollbar_state) =
-                self.build_scrollbar(task_index, num_tasks, height);
+        if height < num_tasks {
+            match self.table_state.selected() {
+                Some(index) => {
+                    self.scrollbar_state = self.scrollbar_state.position(index);
+                }
+                None => {}
+            }
+
             frame.render_stateful_widget(
-                scrollbar,
+                self.scrollbar.clone(),
                 area.inner(Margin {
                     vertical: 1,
                     horizontal: 0,
                 }),
-                &mut scrollbar_state,
+                &mut self.scrollbar_state,
             );
         }
 
         return TasksReturnProps {
-            task_index,
-            selected_task: match selected_task {
-                Some(task) => Some(task.clone()),
+            selected_task: match self.table_state.selected() {
+                Some(index) => Some(tasks[index].clone()),
                 None => None,
             },
         };
     }
 
-    fn build_scrollbar(
-        &self,
-        index: usize,
-        length: usize,
-        height: usize,
-    ) -> (Scrollbar, ScrollbarState) {
-        let scrollbar = Scrollbar::new(ratatui::widgets::ScrollbarOrientation::VerticalRight)
-            .begin_symbol(Some("↑"))
-            .end_symbol(Some("↓"))
-            .thumb_symbol("▒");
-
-        let scrollbar_state = ScrollbarState::new(length - height / 2)
-            .position(self.calculate_scrollbar_position(index, height));
-
-        (scrollbar, scrollbar_state)
+    pub fn scroll_down(&mut self) {
+        self.table_state.scroll_down_by(1);
     }
 
-    fn calculate_scroll_offset(&self, index: usize, length: usize, height: usize) -> (u16, u16) {
-        let half_height = height / 2;
-
-        let vertical_offset = if index < half_height {
-            0
-        } else if length - index < half_height {
-            length - height
-        } else {
-            index - half_height
-        };
-        let horizontal_offset = 0;
-
-        (vertical_offset as u16, horizontal_offset as u16)
-    }
-
-    fn calculate_scrollbar_position(&self, index: usize, height: usize) -> usize {
-        let half_height = height / 2;
-
-        if index < half_height {
-            0
-        } else {
-            index - half_height
-        }
+    pub fn scroll_up(&mut self) {
+        self.table_state.scroll_up_by(1);
     }
 }
 
 pub struct TasksProps<'a> {
     on: bool,
-    task_index: usize,
     tasks: Vec<&'a Task>,
 }
 
@@ -156,21 +134,10 @@ impl<'a> From<(&'a Model, &Context)> for TasksProps<'a> {
 
         let tasks: Vec<&Task> = model.tasks().iter().filter(filter).collect();
 
-        TasksProps {
-            on,
-            task_index: if tasks.len() == 0 {
-                0
-            } else if context.task_index() >= tasks.len() {
-                tasks.len() - 1
-            } else {
-                context.task_index()
-            },
-            tasks,
-        }
+        TasksProps { on, tasks }
     }
 }
 
 pub struct TasksReturnProps {
-    pub task_index: usize,
     pub selected_task: Option<Task>,
 }

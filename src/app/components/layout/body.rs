@@ -17,15 +17,15 @@ use ratatui::{
     Frame,
 };
 
-pub struct Body {
+pub struct Body<'a> {
     about: About,
-    tasks: Tasks,
+    pub tasks: Tasks<'a>,
     editor: Editor,
     command: Command,
 }
 
-impl Body {
-    pub fn new() -> Body {
+impl<'a> Body<'a> {
+    pub fn new() -> Body<'a> {
         Body {
             about: About::new(),
             tasks: Tasks::new(),
@@ -34,7 +34,7 @@ impl Body {
         }
     }
 
-    pub fn render(&self, model: &Model, context: &mut Context, frame: &mut Frame, area: Rect) {
+    pub fn render(&mut self, model: &Model, context: &mut Context, frame: &mut Frame, area: Rect) {
         let panel = Layout::default()
             .direction(Direction::Vertical)
             .constraints([Constraint::Min(3), Constraint::Length(3)])
@@ -59,13 +59,13 @@ impl Body {
             .split(panel[0]);
 
         let TasksReturnProps {
-            task_index,
+            // task_index,
             selected_task,
         } = self
             .tasks
             .render((model, context.borrow()).into(), frame, area[0]);
 
-        context.set_task_index(task_index);
+        // context.set_task_index(task_index);
         context.set_selected_task(selected_task);
 
         if let Some(task) = context.selected_task().clone() {
@@ -83,4 +83,8 @@ impl Body {
                 .render((model, context.borrow()).into(), frame, area[1]);
         }
     }
+
+    // pub fn tasks_mut(&'a mut self) -> &mut Tasks {
+    //     &mut self.tasks
+    // }
 }

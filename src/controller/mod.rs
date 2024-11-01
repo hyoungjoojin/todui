@@ -3,7 +3,10 @@ pub mod key;
 pub mod state;
 
 use crate::{
-    app::context::{editor::EditorMode, Context, Stage},
+    app::{
+        context::{editor::EditorMode, Stage},
+        App,
+    },
     controller::{key::Key, state::State},
     model::Model,
 };
@@ -16,7 +19,7 @@ impl Controller {
         Controller {}
     }
 
-    pub fn run(&self, model: &Model, context: &mut Context) -> State {
+    pub fn run(&self, model: &Model, app: &mut App) -> State {
         let key: KeyEvent = match event::read() {
             Ok(Event::Key(key)) => key,
             Ok(_) => return State::Continue,
@@ -27,31 +30,33 @@ impl Controller {
             return State::Break;
         }
 
-        if context.stage() == Stage::EDITOR
-            && *context.editor_context().mode() == EditorMode::INSERT
+        if app.context_mut().stage() == Stage::EDITOR
+            && *app.context_mut().editor_context().mode() == EditorMode::INSERT
         {
             if let KeyCode::Char(c) = key.code {
-                let stage = *context.editor_context().stage();
-                context
+                let stage = *app.context_mut().editor_context().stage();
+                app.context_mut()
                     .editor_context_mut()
                     .append_character_to_field(stage, c);
             };
 
             if key.code == KeyCode::Backspace {
-                let stage = *context.editor_context().stage();
-                context
+                let stage = *app.context_mut().editor_context().stage();
+                app.context_mut()
                     .editor_context_mut()
                     .delete_character_from_field(stage);
             };
 
             if key.code == KeyCode::Esc {
-                context.editor_context_mut().set_mode(EditorMode::NORMAL);
+                app.context_mut()
+                    .editor_context_mut()
+                    .set_mode(EditorMode::NORMAL);
             }
 
             return State::Continue;
         }
 
         let key = Key::from_keycode(key.code);
-        Key::get_action(&key)((model, context))
+        Key::get_action(&key)((model, app))
     }
 }
