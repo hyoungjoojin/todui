@@ -10,8 +10,10 @@ use crate::{
     controller::{state::State, Controller},
     model::Model,
 };
+use app::context::editor::EditorStage;
 use std::{sync::Arc, time::Duration};
 use tokio::{self, sync::Mutex, time::sleep};
+use utils::api::HttpMethod;
 use tracing::instrument;
 use tracing_subscriber::{fmt::layer, layer::SubscriberExt, util::SubscriberInitExt, Registry};
 use utils::log::initialize_log_file;
@@ -60,6 +62,24 @@ async fn main() {
                         );
                     }
                 });
+            }
+            State::PostTask => {
+                let id = app
+                    .context_mut()
+                    .editor_context()
+                    .get_field(EditorStage::ID)
+                    .value
+                    .clone();
+
+                model
+                    .client()
+                    .send(
+                        format!("/tasks/{}", id.as_str()).as_str(),
+                        HttpMethod::POST,
+                        Some(app.context_mut().editor_context().build_body()),
+                    )
+                    .await
+                    .unwrap();
             }
             _ => break,
         }

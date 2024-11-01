@@ -35,6 +35,10 @@ impl Key {
             Key::Enter => Box::new(|(_, app)| {
                 let context = app.context_mut();
 
+                if context.stage() == Stage::EDITOR {
+                    return State::PostTask;
+                }
+
                 if context.stage() == Stage::BODY {
                     context.set_stage(Stage::EDITOR);
                     return State::Continue;
