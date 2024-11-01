@@ -47,19 +47,34 @@ impl RestClient {
         let token = self.token.clone();
 
         let response = match method {
-            HttpMethod::GET => self.client.get(url).bearer_auth(token).send(),
+            HttpMethod::GET => self.client.get(&url).bearer_auth(token).send(),
             HttpMethod::POST => match body {
-                Some(body) => self.client.post(url).bearer_auth(token).json(&body).send(),
-                None => self.client.post(url).bearer_auth(token).send(),
+                Some(body) => self.client.post(&url).bearer_auth(token).json(&body).send(),
+                None => self.client.post(&url).bearer_auth(token).send(),
             },
         }
         .await;
 
-        match response {
-            Ok(response) => {
-                return Ok(response);
+        let response = match response {
+            Ok(response) => response,
+            Err(error) => {
+                tracing::error!(
+                    "Network request sent to {url} failed due to {error}.",
+                    url = url,
+                    error = error
+                );
+                return Err(Error::new(Other, "network request failed"));
             }
-            Err(_) => {
+        };
+
+        match response.error_for_status() {
+            Ok(response) => Ok(response),
+            Err(error) => {
+                tracing::error!(
+                    "Network request sent to {url} sent back an error status: {error}.",
+                    url = url,
+                    error = error
+                );
                 return Err(Error::new(Other, "network request failed"));
             }
         }

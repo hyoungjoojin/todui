@@ -3,45 +3,91 @@ use crossterm::{
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
-use ratatui::{backend::CrosstermBackend, CompletedFrame, Frame, Terminal};
-use std::io::{self, Result};
+use ratatui::{backend::CrosstermBackend, Frame, Terminal};
+use std::{
+    io::{self},
+    process::exit,
+};
 
 pub struct Canvas {
     terminal: Terminal<CrosstermBackend<io::Stderr>>,
 }
 
 impl Canvas {
-    pub fn new() -> Result<Canvas> {
-        match enable_raw_mode() {
-            Ok(_) => {}
-            Err(error) => return Err(error),
+    pub fn new() -> Canvas {
+        if let Err(error) = enable_raw_mode() {
+            tracing::warn!(
+                "Failed to enable raw mode due to error {error}",
+                error = error
+            );
         }
 
-        execute!(io::stderr(), EnterAlternateScreen).expect("failed to enter alternate screen");
-        execute!(io::stderr(), EnableMouseCapture).expect("failed to enable mouse capture");
+        if let Err(error) = execute!(io::stderr(), EnterAlternateScreen) {
+            tracing::warn!(
+                "Failed to enter alternate screen due to error {error}",
+                error = error
+            );
+        }
+
+        if let Err(error) = execute!(io::stderr(), EnableMouseCapture) {
+            tracing::warn!(
+                "Failed to enable mouse capture due to error {error}",
+                error = error
+            );
+        }
 
         let backend = CrosstermBackend::new(io::stderr());
 
-        Ok(Canvas {
-            terminal: Terminal::new(backend).expect("failed to initialize terminal"),
-        })
+        let terminal = match Terminal::new(backend) {
+            Ok(terminal) => terminal,
+            Err(error) => {
+                tracing::error!(
+                    "Failed to initialize canvas due to error {error}",
+                    error = error
+                );
+                exit(-1);
+            }
+        };
+
+        Canvas { terminal }
     }
 
-    pub fn draw<F>(&mut self, f: F) -> Result<CompletedFrame>
+    pub fn draw<F>(&mut self, f: F)
     where
         F: FnOnce(&mut Frame),
     {
-        self.terminal.draw(f)
+        if let Err(error) = self.terminal.draw(f) {
+            tracing::error!(
+                "Failed to draw to canvas due to error {error}",
+                error = error
+            );
+        }
     }
 
     pub fn clear(&mut self) {
-        disable_raw_mode().expect("failed to disable raw mode");
+        if let Err(error) = disable_raw_mode() {
+            tracing::warn!(
+                "Failed to enable raw mode due to error {error}",
+                error = error
+            );
+        }
 
-        execute!(self.terminal.backend_mut(), LeaveAlternateScreen)
-            .expect("failed to leave alternate screen");
-        execute!(self.terminal.backend_mut(), DisableMouseCapture)
-            .expect("failed to disable mouse capture");
+        if let Err(error) = execute!(self.terminal.backend_mut(), LeaveAlternateScreen) {
+            tracing::warn!(
+                "Failed to leave alternate screen due to error {error}",
+                error = error
+            );
+        }
 
-        self.terminal.show_cursor().expect("failed to show cursor");
+        if let Err(error) = execute!(self.terminal.backend_mut(), DisableMouseCapture) {
+            tracing::warn!(
+                "Failed to disable mouse capture due to error {error}",
+                error = error
+            );
+        }
+
+        if let Err(error) = self.terminal.show_cursor() {
+            tracing::warn!("Failed to show cursor due to error {error}", error = error);
+        }
     }
 }

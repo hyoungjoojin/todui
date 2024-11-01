@@ -1,7 +1,3 @@
-pub mod about;
-pub mod command;
-pub mod editor;
-pub mod menu;
-pub mod modals;
-pub mod projects;
-pub mod tasks;
+pub mod body;
+pub mod modal;
+pub mod sidebar;
