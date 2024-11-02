@@ -41,7 +41,7 @@ impl Model {
     }
 
     pub fn projects(&self) -> &Vec<Project> {
-        &self.project_manager.projects()
+        self.project_manager.projects()
     }
 
     pub fn tasks(&self) -> &Vec<Task> {
