@@ -121,10 +121,7 @@ impl<'a> From<(&'a Model, &Context)> for TasksProps<'a> {
                     Some(due) => *due.date() == get_current_date(),
                     None => false,
                 }),
-                MenuStage::Upcoming => Box::new(|task: &&Task| match *task.due() {
-                    Some(_) => true,
-                    None => false,
-                }),
+                MenuStage::Upcoming => Box::new(|task: &&Task| task.due().is_some()),
             },
             SidebarStage::Projects => Box::new(move |task: &&Task| match project {
                 Some(project) => task.project_id() == project.id(),
