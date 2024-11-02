@@ -6,8 +6,8 @@ use std::{
 use chrono::Local;
 use dirs::home_dir;
 
-const LOG_DIRECTORY: &'static str = ".local/share/todui/logs";
-const LOG_FILENAME_FORMAT: &'static str = "%Y-%m-%d_%H-%M-%S.log";
+const LOG_DIRECTORY: &str = ".local/share/todui/logs";
+const LOG_FILENAME_FORMAT: &str = "%Y-%m-%d_%H-%M-%S.log";
 
 pub fn initialize_log_file() -> File {
     let directory = match home_dir() {

@@ -9,8 +9,8 @@ const API_TOKEN_NAME: &str = "TODOIST_API_TOKEN";
 const BASE_PATH: &str = "https://api.todoist.com/rest/v2";
 
 pub enum HttpMethod {
-    GET,
-    POST,
+    Get,
+    Post,
 }
 
 #[derive(Clone)]
@@ -47,8 +47,8 @@ impl RestClient {
         let token = self.token.clone();
 
         let response = match method {
-            HttpMethod::GET => self.client.get(&url).bearer_auth(token).send(),
-            HttpMethod::POST => match body {
+            HttpMethod::Get => self.client.get(&url).bearer_auth(token).send(),
+            HttpMethod::Post => match body {
                 Some(body) => self.client.post(&url).bearer_auth(token).json(&body).send(),
                 None => self.client.post(&url).bearer_auth(token).send(),
             },
@@ -75,7 +75,7 @@ impl RestClient {
                     url = url,
                     error = error
                 );
-                return Err(Error::new(Other, "network request failed"));
+                Err(Error::new(Other, "network request failed"))
             }
         }
     }
