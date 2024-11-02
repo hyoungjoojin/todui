@@ -32,25 +32,25 @@ impl Controller {
 
         let context = app.context_mut();
 
-        if context.stage() == Stage::EDITOR
-            && *context.editor_context().mode() == EditorMode::INSERT
+        if context.stage() == Stage::Editor
+            && *context.editor_context().mode() == EditorMode::Insert
         {
             if let KeyCode::Char(c) = key.code {
-                let stage = context.editor_context().stage().clone();
+                let stage = *context.editor_context().stage();
                 context
                     .editor_context_mut()
                     .append_character_to_field(stage, c);
             };
 
             if key.code == KeyCode::Backspace {
-                let stage = context.editor_context().stage().clone();
+                let stage = *context.editor_context().stage();
                 context
                     .editor_context_mut()
                     .delete_character_from_field(stage);
             };
 
             if key.code == KeyCode::Esc {
-                context.editor_context_mut().set_mode(EditorMode::NORMAL);
+                context.editor_context_mut().set_mode(EditorMode::Normal);
             }
 
             return State::Continue;

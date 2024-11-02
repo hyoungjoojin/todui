@@ -26,15 +26,15 @@ impl Menu {
             Line::from(Span::styled(
                 "- Today ",
                 match menu_stage {
-                    MenuStage::TODAY => Color::Green,
-                    MenuStage::UPCOMING => Color::White,
+                    MenuStage::Today => Color::Green,
+                    MenuStage::Upcoming => Color::White,
                 },
             )),
             Line::from(Span::styled(
                 "- Upcoming ",
                 match menu_stage {
-                    MenuStage::TODAY => Color::White,
-                    MenuStage::UPCOMING => Color::Green,
+                    MenuStage::Today => Color::White,
+                    MenuStage::Upcoming => Color::Green,
                 },
             )),
         ];
@@ -58,7 +58,7 @@ pub struct MenuProps {
 
 impl From<(&Model, &Context)> for MenuProps {
     fn from((_, context): (&Model, &Context)) -> MenuProps {
-        let on = context.stage() == Stage::SIDEBAR && context.sidebar_stage() == SidebarStage::MENU;
+        let on = context.stage() == Stage::Sidebar && context.sidebar_stage() == SidebarStage::Menu;
 
         MenuProps {
             on,

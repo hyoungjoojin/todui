@@ -42,12 +42,12 @@ impl<'a> Body<'a> {
 
         self.command.render(frame, panel[1]);
 
-        if context.sidebar_stage() == SidebarStage::ABOUT {
+        if context.sidebar_stage() == SidebarStage::About {
             self.about.render(frame, panel[0]);
             return;
         }
 
-        if context.stage() != Stage::EDITOR {
+        if context.stage() != Stage::Editor {
             self.tasks
                 .render((model, context.borrow()).into(), frame, panel[0]);
             return;
@@ -71,9 +71,9 @@ impl<'a> Body<'a> {
         if let Some(task) = context.selected_task().clone() {
             if context.editor_context().updated() {
                 context.editor_context_mut().set_fields([
-                    &task.id(),
-                    &task.content(),
-                    &task.description(),
+                    task.id(),
+                    task.content(),
+                    task.description(),
                 ]);
 
                 context.editor_context_mut().set_updated(false);

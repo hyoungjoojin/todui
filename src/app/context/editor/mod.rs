@@ -24,8 +24,8 @@ impl EditorContext {
     pub fn new() -> EditorContext {
         EditorContext {
             updated: true,
-            stage: EditorStage::CONTENT,
-            mode: EditorMode::NORMAL,
+            stage: EditorStage::Content,
+            mode: EditorMode::Normal,
             fields: EditorField::build_initial_fields(),
         }
     }
@@ -57,31 +57,31 @@ impl EditorContext {
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub enum EditorStage {
-    ID,
-    CONTENT,
-    DESCRIPTION,
+    Id,
+    Content,
+    Description,
 }
 
 impl EditorStage {
     pub fn previous(&self) -> EditorStage {
         match self {
-            EditorStage::ID => EditorStage::ID,
-            EditorStage::CONTENT => EditorStage::DESCRIPTION,
-            EditorStage::DESCRIPTION => EditorStage::CONTENT,
+            EditorStage::Id => EditorStage::Id,
+            EditorStage::Content => EditorStage::Description,
+            EditorStage::Description => EditorStage::Content,
         }
     }
 
     pub fn next(&self) -> EditorStage {
         match self {
-            EditorStage::ID => EditorStage::ID,
-            EditorStage::DESCRIPTION => EditorStage::CONTENT,
-            EditorStage::CONTENT => EditorStage::DESCRIPTION,
+            EditorStage::Id => EditorStage::Id,
+            EditorStage::Description => EditorStage::Content,
+            EditorStage::Content => EditorStage::Description,
         }
     }
 }
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub enum EditorMode {
-    NORMAL,
-    INSERT,
+    Normal,
+    Insert,
 }

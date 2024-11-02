@@ -25,7 +25,7 @@ impl HelpModal {
                 }
 
                 Line::default().spans(vec![
-                    Span::styled(format!("{}", Key::get_keycode(&key)), Color::Green),
+                    Span::styled(Key::get_keycode(&key).to_string(), Color::Green),
                     Span::styled(format!(": {}", Key::get_description(&key)), Color::White),
                 ])
             })
