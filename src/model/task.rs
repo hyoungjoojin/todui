@@ -15,12 +15,15 @@ pub struct Task {
     project_id: String,
     priority: u8,
     due: Option<Due>,
+
+    #[serde(skip)]
+    project_name: String,
 }
 
 impl<'a> From<&&Task> for Row<'a> {
     fn from(task: &&Task) -> Row<'a> {
         [
-            task.project_id(),
+            task.project_name(),
             task.content(),
             &task.due_date(),
             &task.priority().to_string(),
@@ -61,6 +64,14 @@ impl Task {
 
     pub fn due(&self) -> &Option<Due> {
         &self.due
+    }
+
+    pub fn project_name(&self) -> &String {
+        &self.project_name
+    }
+
+    pub fn set_project_name(&mut self, project_name: String) {
+        self.project_name = project_name;
     }
 }
 
