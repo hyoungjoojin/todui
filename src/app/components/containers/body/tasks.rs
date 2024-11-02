@@ -121,7 +121,7 @@ impl<'a> From<(&'a Model, &Context)> for TasksProps<'a> {
                     Some(due) => *due.date() == get_current_date(),
                     None => false,
                 }),
-                MenuStage::Upcoming => Box::new(|_: &&Task| true),
+                MenuStage::Upcoming => Box::new(|task: &&Task| task.due().is_some()),
             },
             SidebarStage::Projects => Box::new(move |task: &&Task| match project {
                 Some(project) => task.project_id() == project.id(),
@@ -129,7 +129,15 @@ impl<'a> From<(&'a Model, &Context)> for TasksProps<'a> {
             }),
         };
 
-        let tasks: Vec<&Task> = model.tasks().iter().filter(filter).collect();
+        let mut tasks: Vec<&Task> = model.tasks().iter().filter(filter).collect();
+
+        if context.sidebar_stage() == SidebarStage::Menu
+            && context.menu_stage() == MenuStage::Upcoming
+        {
+            tasks.sort_by(|task1, task2| {
+                task1.due().unwrap().date().cmp(task2.due().unwrap().date())
+            });
+        }
 
         TasksProps { on, tasks }
     }
