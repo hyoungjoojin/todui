@@ -1,8 +1,10 @@
-use crossterm::event::KeyCode;
+use crossterm::event::{KeyCode, KeyEvent};
 use strum::EnumIter;
 
 #[derive(PartialEq, Eq, EnumIter)]
 pub enum Key {
+    CharDandD,
+
     Quit,
     Escape,
     Enter,
@@ -25,27 +27,46 @@ pub enum Key {
 }
 
 impl Key {
-    pub fn from_keycode(keycode: KeyCode) -> Key {
-        match keycode {
-            KeyCode::Char('q') => Key::Quit,
-            KeyCode::Esc => Key::Escape,
-            KeyCode::Enter => Key::Enter,
-            KeyCode::Char('r') => Key::Reload,
-            KeyCode::Char('h') => Key::Left,
-            KeyCode::Char('l') => Key::Right,
-            KeyCode::Char('k') => Key::Up,
-            KeyCode::Char('j') => Key::Down,
-            KeyCode::Char('i') => Key::Insert,
-            KeyCode::Char('0') => Key::About,
-            KeyCode::Char('1') => Key::Menu,
-            KeyCode::Char('2') => Key::Projects,
-            KeyCode::Char('?') => Key::Help,
-            _ => Key::Ignore,
+    pub fn from_keyevent(keyevent: KeyEvent, memory: Option<KeyEvent>) -> (Key, bool) {
+        if let Some(memory) = memory {
+            match memory.code {
+                KeyCode::Char('d') => match keyevent.code {
+                    KeyCode::Char('d') => return (Key::CharDandD, false),
+                    _ => return (Key::Ignore, false),
+                },
+                _ => {}
+            }
         }
+
+        match keyevent.code {
+            KeyCode::Char('d') => return (Key::Ignore, true),
+            _ => {}
+        }
+
+        (
+            match keyevent.code {
+                KeyCode::Char('q') => Key::Quit,
+                KeyCode::Esc => Key::Escape,
+                KeyCode::Enter => Key::Enter,
+                KeyCode::Char('r') => Key::Reload,
+                KeyCode::Char('h') => Key::Left,
+                KeyCode::Char('l') => Key::Right,
+                KeyCode::Char('k') => Key::Up,
+                KeyCode::Char('j') => Key::Down,
+                KeyCode::Char('i') => Key::Insert,
+                KeyCode::Char('0') => Key::About,
+                KeyCode::Char('1') => Key::Menu,
+                KeyCode::Char('2') => Key::Projects,
+                KeyCode::Char('?') => Key::Help,
+                _ => Key::Ignore,
+            },
+            false,
+        )
     }
 
     pub fn get_keycode(key: &Key) -> String {
         match key {
+            Key::CharDandD => "d + d".to_string(),
             Key::Quit => "q".to_string(),
             Key::Escape => "<Esc>".to_string(),
             Key::Enter => "<Enter>".to_string(),
@@ -65,6 +86,7 @@ impl Key {
 
     pub fn get_description(key: &Key) -> String {
         match key {
+            Key::CharDandD => "Delete a task".to_string(),
             Key::Quit => "Quit todui.".to_string(),
             Key::Escape => "Escape.".to_string(),
             Key::Enter => "Enter".to_string(),

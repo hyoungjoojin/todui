@@ -12,6 +12,7 @@ type ActionFn = Box<dyn Fn((&Model, &mut App)) -> State>;
 impl Key {
     pub fn get_action(key: &Key) -> ActionFn {
         match *key {
+            Key::CharDandD => Box::new(|(_, _)| State::Break),
             Key::Quit => Box::new(|(_, _)| State::Break),
             Key::Escape => Box::new(|(_, app)| {
                 let context = app.context_mut();

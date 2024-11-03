@@ -12,51 +12,51 @@ use crate::{
 };
 use crossterm::event::{self, Event, KeyCode, KeyEvent};
 
-pub struct Controller {}
+pub struct Controller {
+    memory: Option<KeyEvent>,
+}
 
 impl Controller {
     pub fn new() -> Controller {
-        Controller {}
+        Controller { memory: None }
     }
 
-    pub fn run(&self, model: &Model, app: &mut App) -> State {
-        let key: KeyEvent = match event::read() {
+    pub fn run(&mut self, model: &Model, app: &mut App) -> State {
+        let keyevent: KeyEvent = match event::read() {
             Ok(Event::Key(key)) => key,
             Ok(_) => return State::Continue,
             Err(_) => return State::Error,
         };
-
-        if key.kind == event::KeyEventKind::Release {
-            return State::Break;
-        }
 
         let context = app.context_mut();
 
         if context.stage() == Stage::Editor
             && *context.editor_context().mode() == EditorMode::Insert
         {
-            if let KeyCode::Char(c) = key.code {
+            if let KeyCode::Char(c) = keyevent.code {
                 let stage = *context.editor_context().stage();
                 context
                     .editor_context_mut()
                     .append_character_to_field(stage, c);
             };
 
-            if key.code == KeyCode::Backspace {
+            if keyevent.code == KeyCode::Backspace {
                 let stage = *context.editor_context().stage();
                 context
                     .editor_context_mut()
                     .delete_character_from_field(stage);
             };
 
-            if key.code == KeyCode::Esc {
+            if keyevent.code == KeyCode::Esc {
                 context.editor_context_mut().set_mode(EditorMode::Normal);
             }
 
             return State::Continue;
         }
 
-        let key = Key::from_keycode(key.code);
+        let (key, set_memory) = Key::from_keyevent(keyevent, self.memory);
+        self.memory = if set_memory { Some(keyevent) } else { None };
+
         Key::get_action(&key)((model, app))
     }
 }

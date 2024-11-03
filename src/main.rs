@@ -34,7 +34,7 @@ async fn main() {
 
     let mut canvas = Canvas::new();
     let mut app = App::new();
-    let controller: Controller = Controller::new();
+    let mut controller: Controller = Controller::new();
 
     let model_lock = Arc::new(Mutex::new(Model::new().await));
 
