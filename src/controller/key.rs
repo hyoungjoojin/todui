@@ -1,7 +1,7 @@
 use crossterm::event::{KeyCode, KeyEvent};
 use strum::EnumIter;
 
-#[derive(PartialEq, Eq, EnumIter)]
+#[derive(PartialEq, Eq, EnumIter, Debug)]
 pub enum Key {
     CharDandD,
 
@@ -27,6 +27,22 @@ pub enum Key {
 }
 
 impl Key {
+    /// Creates a Key instance from a given KeyEvent.
+    ///
+    /// This function takes a KeyEvent of the current key input event and returns a Key
+    /// instance. Since events where a key is double tapped can exist, a memory variable
+    /// is used. This function also returns a boolean value alongside the Key variable,
+    /// that indicates whether or not the memory should be updated.
+    ///
+    /// ## Parameters
+    /// - keyevent (crossterm::event::KeyEvent): The current key input event.
+    /// - memory (Option<KeyEvent>): The previous key input event.
+    ///
+    /// ## Returns
+    /// - A tuple containing:
+    ///   - 'Key': The created Key instance.
+    ///   - 'bool': A boolean value indicating whether to update the memory. Returns true
+    ///             if the memory should be updated and false otherwise.
     pub fn from_keyevent(keyevent: KeyEvent, memory: Option<KeyEvent>) -> (Key, bool) {
         if let Some(memory) = memory {
             match memory.code {
@@ -101,6 +117,46 @@ impl Key {
             Key::Projects => "Set sidebar stage to projects.".to_string(),
             Key::Help => "Open help modal.".to_string(),
             Key::Ignore => "".to_string(),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Key;
+    use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
+
+    #[test]
+    fn test_from_keyevent() {
+        let input = [
+            // Pressing double ds.
+            (
+                KeyEvent::new(KeyCode::Char('d'), KeyModifiers::empty()),
+                Some(KeyEvent::new(KeyCode::Char('d'), KeyModifiers::empty())),
+            ),
+            // Pressing one d and another key.
+            (
+                KeyEvent::new(KeyCode::Char('e'), KeyModifiers::empty()),
+                Some(KeyEvent::new(KeyCode::Char('d'), KeyModifiers::empty())),
+            ),
+            // Pressing one d.
+            (
+                KeyEvent::new(KeyCode::Char('d'), KeyModifiers::empty()),
+                None,
+            ),
+        ];
+        let expected_output = [
+            (Key::CharDandD, false),
+            (Key::Ignore, false),
+            (Key::Ignore, true),
+        ];
+
+        assert_eq!(input.len(), expected_output.len());
+
+        for ((keyevent, memory), (key, set_memory)) in input.iter().zip(expected_output.iter()) {
+            let (output_key, output_set_memory) = Key::from_keyevent(*keyevent, *memory);
+            assert_eq!(*key, output_key);
+            assert_eq!(*set_memory, output_set_memory);
         }
     }
 }
