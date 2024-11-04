@@ -11,6 +11,7 @@ const BASE_PATH: &str = "https://api.todoist.com/rest/v2";
 pub enum HttpMethod {
     Get,
     Post,
+    Delete,
 }
 
 #[derive(Clone)]
@@ -46,12 +47,14 @@ impl RestClient {
         let url = format!("{}{}", BASE_PATH, url);
         let token = self.token.clone();
 
+        tracing::info!("Sending network request to {url}.");
         let response = match method {
             HttpMethod::Get => self.client.get(&url).bearer_auth(token).send(),
             HttpMethod::Post => match body {
                 Some(body) => self.client.post(&url).bearer_auth(token).json(&body).send(),
                 None => self.client.post(&url).bearer_auth(token).send(),
             },
+            HttpMethod::Delete => self.client.delete(&url).bearer_auth(token).send(),
         }
         .await;
 

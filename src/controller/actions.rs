@@ -12,7 +12,10 @@ type ActionFn = Box<dyn Fn((&Model, &mut App)) -> State>;
 impl Key {
     pub fn get_action(key: &Key) -> ActionFn {
         match *key {
-            Key::CharDandD => Box::new(|(_, _)| State::Break),
+            Key::CharDandD => Box::new(|(_, app)| match app.context_mut().selected_task() {
+                Some(task) => State::DeleteTask(task.id().clone()),
+                None => State::Continue,
+            }),
             Key::Quit => Box::new(|(_, _)| State::Break),
             Key::Escape => Box::new(|(_, app)| {
                 let context = app.context_mut();

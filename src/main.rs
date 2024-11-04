@@ -81,6 +81,17 @@ async fn main() {
                     .await
                     .unwrap();
             }
+            State::DeleteTask(id) => {
+                model
+                    .client()
+                    .send(
+                        format!("/tasks/{}", id.as_str()).as_str(),
+                        HttpMethod::Delete,
+                        None,
+                    )
+                    .await
+                    .unwrap();
+            }
             _ => break,
         }
     }

@@ -4,4 +4,6 @@ pub enum State {
     Break,
     Error,
     PostTask,
+
+    DeleteTask(String),
 }
