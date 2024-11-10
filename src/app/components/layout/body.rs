@@ -58,14 +58,10 @@ impl<'a> Body<'a> {
             .constraints([Constraint::Percentage(40), Constraint::Percentage(60)])
             .split(panel[0]);
 
-        let TasksReturnProps {
-            // task_index,
-            selected_task,
-        } = self
-            .tasks
-            .render((model, context.borrow()).into(), frame, area[0]);
+        let TasksReturnProps { selected_task } =
+            self.tasks
+                .render((model, context.borrow()).into(), frame, area[0]);
 
-        // context.set_task_index(task_index);
         context.set_selected_task(selected_task);
 
         if let Some(task) = context.selected_task().clone() {
@@ -83,8 +79,4 @@ impl<'a> Body<'a> {
                 .render((model, context.borrow()).into(), frame, area[1]);
         }
     }
-
-    // pub fn tasks_mut(&'a mut self) -> &mut Tasks {
-    //     &mut self.tasks
-    // }
 }

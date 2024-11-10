@@ -34,7 +34,7 @@ async fn main() {
 
     let mut canvas = Canvas::new();
     let mut app = App::new();
-    let controller: Controller = Controller::new();
+    let mut controller: Controller = Controller::new();
 
     let model_lock = Arc::new(Mutex::new(Model::new().await));
 
@@ -77,6 +77,19 @@ async fn main() {
                         format!("/tasks/{}", id.as_str()).as_str(),
                         HttpMethod::Post,
                         Some(app.context_mut().editor_context().build_body()),
+                    )
+                    .await
+                    .unwrap();
+            }
+            State::DeleteTask(id) => {
+                tracing::info!("Deleting task {id}.", id = id);
+
+                model
+                    .client()
+                    .send(
+                        format!("/tasks/{}", id.as_str()).as_str(),
+                        HttpMethod::Delete,
+                        None,
                     )
                     .await
                     .unwrap();
