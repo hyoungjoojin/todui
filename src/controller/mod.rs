@@ -54,9 +54,7 @@ impl Controller {
             return State::Continue;
         }
 
-        let (key, set_memory) = Key::from_keyevent(keyevent, self.memory);
-        self.memory = if set_memory { Some(keyevent) } else { None };
-
+        let key = Key::from_keyevent(keyevent, &mut self.memory);
         Key::get_action(&key)((model, app))
     }
 }

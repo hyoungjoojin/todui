@@ -16,7 +16,7 @@ impl Key {
                 Some(task) => State::DeleteTask(task.id().clone()),
                 None => State::Continue,
             }),
-            Key::Quit => Box::new(|(_, _)| State::Break),
+            Key::CharQ => Box::new(|(_, _)| State::Break),
             Key::Escape => Box::new(|(_, app)| {
                 let context = app.context_mut();
 
@@ -37,7 +37,7 @@ impl Key {
 
                 State::Continue
             }),
-            Key::Reload => Box::new(|(_, _)| State::Reload),
+            Key::CharShiftR => Box::new(|(_, _)| State::Reload),
             Key::Enter => Box::new(|(_, app)| {
                 let context = app.context_mut();
 
@@ -57,7 +57,7 @@ impl Key {
 
                 State::Continue
             }),
-            Key::Insert => Box::new(|(_, app)| {
+            Key::CharI => Box::new(|(_, app)| {
                 let context = app.context_mut();
 
                 if context.stage() == Stage::Editor
@@ -68,7 +68,7 @@ impl Key {
 
                 State::Continue
             }),
-            Key::Left => Box::new(|(_, app)| {
+            Key::CharH => Box::new(|(_, app)| {
                 let context = app.context_mut();
 
                 if context.stage() == Stage::Editor {
@@ -83,7 +83,7 @@ impl Key {
                 context.set_sidebar_stage(sidebar_stage);
                 State::Continue
             }),
-            Key::Right => Box::new(|(_, app)| {
+            Key::CharL => Box::new(|(_, app)| {
                 let context = app.context_mut();
 
                 if context.stage() == Stage::Editor {
@@ -98,25 +98,7 @@ impl Key {
                 context.set_sidebar_stage(sidebar_stage);
                 State::Continue
             }),
-            Key::About => Box::new(|(_, app)| {
-                let context = app.context_mut();
-
-                context.set_sidebar_stage(SidebarStage::About);
-                State::Continue
-            }),
-            Key::Menu => Box::new(|(_, app)| {
-                let context = app.context_mut();
-
-                context.set_sidebar_stage(SidebarStage::Menu);
-                State::Continue
-            }),
-            Key::Projects => Box::new(|(_, app)| {
-                let context = app.context_mut();
-
-                context.set_sidebar_stage(SidebarStage::Projects);
-                State::Continue
-            }),
-            Key::Up => Box::new(|(_, app)| {
+            Key::CharK => Box::new(|(_, app)| {
                 let context = app.context_mut();
 
                 if context.stage() == Stage::Editor {
@@ -148,7 +130,7 @@ impl Key {
 
                 State::Continue
             }),
-            Key::Down => Box::new(|(model, app)| {
+            Key::CharJ => Box::new(|(model, app)| {
                 let context = app.context_mut();
 
                 if context.stage() == Stage::Editor {
@@ -180,7 +162,25 @@ impl Key {
 
                 State::Continue
             }),
-            Key::Help => Box::new(|(_, app)| {
+            Key::CharZero => Box::new(|(_, app)| {
+                let context = app.context_mut();
+
+                context.set_sidebar_stage(SidebarStage::About);
+                State::Continue
+            }),
+            Key::CharOne => Box::new(|(_, app)| {
+                let context = app.context_mut();
+
+                context.set_sidebar_stage(SidebarStage::Menu);
+                State::Continue
+            }),
+            Key::CharTwo => Box::new(|(_, app)| {
+                let context = app.context_mut();
+
+                context.set_sidebar_stage(SidebarStage::Projects);
+                State::Continue
+            }),
+            Key::CharQuestionMark => Box::new(|(_, app)| {
                 let context = app.context_mut();
 
                 if context.modal_stage() != ModalStage::Help {

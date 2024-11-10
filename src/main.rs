@@ -82,6 +82,8 @@ async fn main() {
                     .unwrap();
             }
             State::DeleteTask(id) => {
+                tracing::info!("Deleting task {id}.", id = id);
+
                 model
                     .client()
                     .send(
