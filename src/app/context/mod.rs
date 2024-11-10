@@ -85,8 +85,9 @@ pub enum Stage {
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub enum ModalStage {
-    Off,
     Help,
+    Project,
+    Off,
 }
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]

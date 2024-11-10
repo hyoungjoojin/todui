@@ -1,38 +1,62 @@
-use crate::app::{components::containers::modal::help::HelpModal, context::ModalStage, Context};
+use crate::app::{
+    components::containers::modal::{help::HelpModal, project::ProjectModal, ModalTrait},
+    context::ModalStage,
+    Context,
+};
 use ratatui::{
-    layout::{Constraint, Flex, Layout, Rect},
+    layout::{Flex, Rect},
     widgets::Clear,
     Frame,
 };
 
-pub struct Modal {}
+pub struct Modal {
+    modal: Option<Box<dyn ModalTrait>>,
+    current_stage: ModalStage,
+}
 
 impl Modal {
     pub fn new() -> Modal {
-        Modal {}
+        Modal {
+            modal: None,
+            current_stage: ModalStage::Off,
+        }
     }
 
-    pub fn render(&self, context: &Context, frame: &mut Frame, area: Rect) {
-        if context.modal_stage() == ModalStage::Off {
-            return;
+    pub fn render(&mut self, context: &Context, frame: &mut Frame, area: Rect) {
+        if self.current_stage != context.modal_stage() {
+            self.current_stage = context.modal_stage();
+
+            match self.current_stage {
+                ModalStage::Help => {
+                    self.modal.replace(Box::new(HelpModal::new()));
+                }
+                ModalStage::Project => {
+                    self.modal.replace(Box::new(ProjectModal::new()));
+                }
+                ModalStage::Off => {
+                    self.modal.take();
+                    return;
+                }
+            };
         }
 
-        let [area] = Layout::vertical([Constraint::Percentage(60)])
+        let modal = if let Some(modal) = &self.modal {
+            modal
+        } else {
+            return;
+        };
+
+        let [area] = modal
+            .get_vertical_layout_constraints()
             .flex(Flex::Center)
             .areas(area);
 
-        let [area] = Layout::horizontal([Constraint::Percentage(60)])
+        let [area] = modal
+            .get_horizontal_layout_constraints()
             .flex(Flex::Center)
             .areas(area);
 
         frame.render_widget(Clear, area);
-
-        let modal = match context.modal_stage() {
-            ModalStage::Help => HelpModal::new(),
-            _ => {
-                return;
-            }
-        };
 
         modal.render(frame, area);
     }

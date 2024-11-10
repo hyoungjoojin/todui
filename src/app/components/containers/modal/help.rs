@@ -1,12 +1,14 @@
 use crate::controller::key::Key;
 use ratatui::{
-    layout::Rect,
+    layout::{Constraint, Layout, Rect},
     style::{Color, Style},
     text::{Line, Span, Text},
     widgets::{Block, Paragraph},
     Frame,
 };
 use strum::IntoEnumIterator;
+
+use super::ModalTrait;
 
 pub struct HelpModal {}
 
@@ -16,8 +18,10 @@ impl HelpModal {
     pub fn new() -> HelpModal {
         HelpModal {}
     }
+}
 
-    pub fn render(&self, frame: &mut Frame, area: Rect) {
+impl ModalTrait for HelpModal {
+    fn render(&self, frame: &mut Frame, area: Rect) {
         let keybindings: Vec<Line> = Key::iter()
             .map(|key| {
                 if key == Key::Ignore {
@@ -39,5 +43,13 @@ impl HelpModal {
             ),
             area,
         );
+    }
+
+    fn get_vertical_layout_constraints(&self) -> Layout {
+        Layout::vertical([Constraint::Percentage(60)])
+    }
+
+    fn get_horizontal_layout_constraints(&self) -> Layout {
+        Layout::vertical([Constraint::Percentage(60)])
     }
 }
